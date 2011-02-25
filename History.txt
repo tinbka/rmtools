@@ -1,4 +1,22 @@
+=== Version 1.1.7
+
+* Oh, it's just cosmetic fixes for txts
+
+=== Version 1.1.6
+
+* Rewrited few functions
+* Fixed bug with RDoc and RI
+* Compatible with 1.9
+* Binding#start_interaction and RMTools::Observer for debugging purposes
+* To require any file from lib/rmtools now RMTools::require is used
+* In order to not overload Rails apps initialization tracing is lightened and gem now may be also required as "rmtools_nodebug" and "rmtools_notrace"
+
+=== Version 1.1.0
+
+* Fixed some bugs
+* Divided by semantics
+* Compatible with ruby 1.8.7 (2010-08-16 patchlevel 302)
+
 === Version 1.0.0
 
 * Divided by classes and packed as gem
-

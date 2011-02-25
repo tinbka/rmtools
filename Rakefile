@@ -1,19 +1,20 @@
 require 'rake'
-require './lib/rmtools/setup'
+require 'lib/rmtools/install'
 compile_manifest
 
+RMTOOLS_VERSION = '1.1.7'
 begin
     require 'hoe'
-    config = Hoe.new('rmtools', '1.0.0') do |h|
-        h.developer("Shinku Templar", "tinbka@gmail.com")
+    config = Hoe.spec 'rmtools' do |h|
+        h.developer("Shinku", "tinbka@gmail.com")
 
         h.summary = 'Yet another Ruby applied framework'
-        h.description = h.paragraphs_of('README.txt', 2..3).join("\n\n")
+        h.description = 'Applied framework primarily for debug and text/arrays/files operation.'
         h.changes = h.paragraphs_of('History.txt', 0..1).join("\n\n")
         h.url = 'http://github.com/tinbka'
        
         h.extra_deps << ['rake','>= 0.8.7']
-        h.extra_deps << ['activesupport','>= 2.3.5']
+        h.extra_deps << ['activesupport','>= 2.3.8']
     end
     config.spec.extensions << 'ext/extconf.rb'
 rescue LoadError
@@ -35,5 +36,4 @@ Dir.chdir "ext" do
   if File.file? 'Makefile'
     system "#{make} clean" and FileUtils.rm_f "Makefile"
   end
-end unless ext_files_not_modified
-  
+end unless ext_files_not_modified 'rmtools', RMTOOLS_VERSION

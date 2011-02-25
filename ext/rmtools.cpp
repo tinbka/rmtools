@@ -225,19 +225,24 @@ static VALUE rb_ary_uniq_by(VALUE ary)
 /*
  *   Make hash with unique items of +self+ or (when block given)
  *   unique results of items yield for keys and 
- *   count of them in +self, or (with option :fill) arrays of themselves, 
- *   or (with option :indexes) arrays of indexes of them for values
+ *   count of them in +self, 
+ *   or (with option :fill) arrays of yield results, 
+ *   or (with option :indexes) arrays of indexes of them,
+ *   or (with option :group) arrays of themselves for values
  *   
- *   [1, 2, 2, 3, 3, 3].count
- *   => {1=>1, 2=>2, 3=>3}
- *   [1, 2, 2, 3, 3, 3].count :fill
- *   => {1=>[1], 2=>[2, 2], 3=>[3, 3, 3]}
- *   [1, 2, 2, 3, 3, 3].count :indexes
- *   => {1=>[0], 2=>[1, 2], 3=>[3, 4, 5]}
- *   [1, 2, 2, 3, 3, 3].count(:indexes) {|i| i%2}
- *   => {0=>[1, 2], 1=>[0, 3, 4, 5]}
- *   [1, 2, 2, 3, 3, 3].count {|i| i%2}
- *   => {0=>2, 1=>4}
+ *   [1, 2, 2, 2, 3, 3].count
+ *   => {1=>1, 2=>3, 3=>2}
+ *   [1, 2, 2, 2, 3, 3].count {|i| i%2}
+ *   => {0=>3, 1=>3}
+ *   [1, 2, 2, 2, 3, 3].count :fill
+ *   => {1=>[1], 2=>[2, 2, 2], 3=>[3, 3]}
+ *   [1, 2, 2, 2, 3, 3].count :indexes
+ *   => {1=>[0], 2=>[1, 2, 3], 3=>[4, 5]}
+ *   [1, 2, 2, 2, 3, 3].count(:indexes) {|i| i%2}
+ *   => {0=>[1, 2, 3], 1=>[0, 4, 5]}
+ *   :group is analogue to rails' group_by but twice faster
+ *   [1, 2, 2, 2, 3, 3].count(:group) {|i| i%2}
+ *   => {0=>[2, 2, 2], 1=>[1, 3, 3]}
  */
 static VALUE rb_ary_count_items(int argc, VALUE *argv, VALUE ary)
 {
@@ -275,6 +280,16 @@ static VALUE rb_ary_count_items(int argc, VALUE *argv, VALUE ary)
   }
   return hash;
 }
+
+/*
+ *  call-seq:
+ *     ary.partition {| obj | block }  => [ true_array, false_array ]
+ *  
+ *  Same as Enumerable#partition, but twice faster
+ *     
+ *     [5, 6, 1, 2, 4, 3].partition {|i| (i&1).zero?}   #=> [[2, 4, 6], [1, 3, 5]]
+ *     
+ */
 
 static VALUE rb_ary_partition(VALUE ary)
 {

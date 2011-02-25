@@ -94,12 +94,13 @@ static const size_t SLOT_SIZE = sizeof(RVALUE);
 #include <re.h>
 
 # define STR_SET_LEN(x, i) (RSTRING(x)->len = (i))
- 
+
+#ifndef RFLOAT_VALUE
 # define RFLOAT_VALUE(f) (RFLOAT(f)->value)
- 
 # define RBIGNUM_DIGITS(f) (RBIGNUM(f)->digits)
 # define RBIGNUM_LEN(f) (RBIGNUM(f)->len)
- 
+#endif 
+
 # define ARY_SET_LEN(x, i) (RARRAY(x)->len = (i))
 
 # define BDIGITS(x) ((BDIGIT*)RBIGNUM(x)->digits)
@@ -141,11 +142,11 @@ static const size_t SLOT_SIZE = sizeof(RVALUE);
 
 
 // shortcuts for debug r_r
-extern void rb_log_std(const char* str)
+extern void rb_log(const char* str)
 {
   rb_funcall(rb_gv_get("$log"), rb_intern("debug"), 1, rb_str_new2(str));
 }
-extern void rb_log_obj_std(VALUE obj)
+extern void rb_log_obj(VALUE obj)
 {
   rb_funcall(rb_gv_get("$log"), rb_intern("debug"), 1, obj);
 }
