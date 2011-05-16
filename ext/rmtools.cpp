@@ -54,7 +54,7 @@ static VALUE rb_ary_string_transpose(VALUE ary)
             for (j=0; j<elen; j++) rb_ary_store(result, j, rb_str_new("", 0));
         }
         else if (elen != RSTRING_LEN(tmp))
-            rb_raise(rb_eIndexError, "element size differs (%d should be %d)",
+            rb_raise(rb_eIndexError, "element size differs (%ld should be %ld)",
                      RARRAY_LEN(tmp), elen);
         for (j=0; j<elen; j++) rb_str_buf_cat(RARRAY_PTR(result)[j], &(RSTRING_PTR(tmp)[j]), 1);
     }
@@ -82,7 +82,7 @@ static VALUE rb_ary_turn_ccw(VALUE ary)
     for (i=0; i<alen; i++) {
         if (i) tmp = RARRAY_PTR(ary)[i];
         if (elen != RSTRING_LEN(tmp))
-            rb_raise(rb_eIndexError, "element size differs (%d should be %d)",
+            rb_raise(rb_eIndexError, "element size differs (%ld should be %ld)",
                      RARRAY_LEN(tmp), elen);
         for (j=0; j<elen; j++) rb_str_buf_cat(RARRAY_PTR(result)[j], &(RSTRING_PTR(tmp)[elen-1-j]), 1);
     }
@@ -93,7 +93,7 @@ static VALUE rb_ary_turn_ccw(VALUE ary)
     for (i=0; i<alen; i++) {
         if (i) tmp = RARRAY_PTR(ary)[i];
         if (elen != RARRAY_LEN(tmp))
-            rb_raise(rb_eIndexError, "element size differs (%d should be %d)",
+            rb_raise(rb_eIndexError, "element size differs (%ld should be %ld)",
                      RARRAY_LEN(tmp), elen);
         for (j=0; j<elen; j++) rb_ary_store(RARRAY_PTR(result)[j], i, RARRAY_PTR(tmp)[elen-1-j]);
     }
@@ -123,7 +123,7 @@ static VALUE rb_ary_turn_cw(VALUE ary)
     for (i=alen-1; i>-1; i--) {
         tmp = RARRAY_PTR(ary)[i];
         if (elen != RSTRING_LEN(tmp))
-            rb_raise(rb_eIndexError, "element size differs (%d should be %d)",
+            rb_raise(rb_eIndexError, "element size differs (%ld should be %ld)",
                      RARRAY_LEN(tmp), elen);
         for (j=0; j<elen; j++) rb_str_buf_cat(RARRAY_PTR(result)[j], &(RSTRING_PTR(tmp)[j]), 1);
     }
@@ -134,7 +134,7 @@ static VALUE rb_ary_turn_cw(VALUE ary)
     for (i=0; i<alen; i++) {
         if (i) tmp = RARRAY_PTR(ary)[i];
         if (elen != RARRAY_LEN(tmp))
-            rb_raise(rb_eIndexError, "element size differs (%d should be %d)",
+            rb_raise(rb_eIndexError, "element size differs (%ld should be %ld)",
                      RARRAY_LEN(tmp), elen);
         for (j=0; j<elen; j++) rb_ary_store(RARRAY_PTR(result)[j], elen-1-i, RARRAY_PTR(tmp)[j]);
     }
@@ -150,7 +150,7 @@ static VALUE rb_ary_turn_cw(VALUE ary)
 static VALUE rb_str_disjunction(VALUE self, VALUE str)
 {
   if (RSTRING_LEN(self) != RSTRING_LEN(str))
-    rb_raise(rb_eIndexError, "strings sizes differs (%d and %d)",
+    rb_raise(rb_eIndexError, "strings sizes differs (%ld and %ld)",
                      RSTRING_LEN(self), RSTRING_LEN(str));
   VALUE new_str = rb_str_new("", 0);
   int i;
@@ -171,7 +171,7 @@ static VALUE rb_str_disjunction(VALUE self, VALUE str)
 static VALUE rb_str_conjunction(VALUE self, VALUE str)
 {
   if (RSTRING_LEN(self) != RSTRING_LEN(str))
-    rb_raise(rb_eIndexError, "strings sizes differs (%d and %d)",
+    rb_raise(rb_eIndexError, "strings sizes differs (%ld and %ld)",
                      RSTRING_LEN(self), RSTRING_LEN(str));
   VALUE new_str = rb_str_new("", 0);
   int i;
@@ -193,21 +193,28 @@ static VALUE rb_str_conjunction(VALUE self, VALUE str)
  *  => [8, 5]
  *  a
  *  => [8, 5]
+ * Here is implyied that callback block is +clean function+
  */
 static VALUE rb_ary_uniq_by_bang(VALUE ary)
 {
   if (!rb_block_given_p())
       return rb_ary_new4(RARRAY_LEN(ary), RARRAY_PTR(ary));
-  VALUE hash, res;
+  VALUE hash, res_hash, res, el;
   long i, j;
 
   hash = rb_hash_new();
+  res_hash = rb_hash_new();
   for (i=j=0; i<RARRAY_LEN(ary); i++) {
-      res = rb_yield(RARRAY_PTR(ary)[i]);
-      if (!st_lookup(RHASH_TBL(hash), res, 0)) {
-          rb_ary_store(ary, j++, RARRAY_PTR(ary)[i]);
-          rb_hash_aset(hash, res, RARRAY_PTR(ary)[i]);
-      }
+      // We store an element itself and so we won't calculate function of it 
+      // other time we'll find it in source. Ruby store function is very fast, 
+      // so we can neglect its runtime even if source array is allready uniq
+      el = RARRAY_PTR(ary)[i];
+      if (st_lookup(RHASH_TBL(hash), el, 0)) continue;
+      res = rb_yield(el);
+      if (st_lookup(RHASH_TBL(res_hash), res, 0)) continue;
+      rb_hash_aset(hash, el, Qtrue);
+      rb_hash_aset(res_hash, res, Qtrue);
+      rb_ary_store(ary, j++, el);
   }
   ARY_SET_LEN(ary, j);
   
@@ -400,11 +407,13 @@ static VALUE rb_hash_map_pairs(VALUE hash)
  */
 static VALUE rb_math_factorial(VALUE x)
 {
-  if (FIX2LONG(x) < 2) return x;
-  return rb_big_mul(x, rb_math_factorial(LONG2FIX(FIX2LONG(x) - 1)));
+  long a = FIX2LONG(x);
+  for (int i = 2; i < a; i++) 
+    x = TYPE(x) == T_BIGNUM ? 
+      rb_big_mul(x, rb_int2big(i)) : 
+      rb_big_mul(rb_int2big(FIX2LONG(x)), rb_int2big(i));
+  return x;
 }
-
-
 
 static int unsigned_big_lte(VALUE x, VALUE y)
 {

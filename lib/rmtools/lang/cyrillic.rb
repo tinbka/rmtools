@@ -14,7 +14,7 @@ class String
     end
     
     def swap
-      sub(/([a-zA-Z])|([а-яА-ЯёЁ])/) {|m| return $~[1]? en2ru: ru2en}
+      sub(/([a-zA-Z])|([А-пр-ёЁ])/) {|m| return $~[1]? en2ru: ru2en}
       self
     end
     
@@ -23,7 +23,7 @@ class String
     end
     
     def cyr?
-      self !~ /[^а-яА-ЯёЁ]/
+      self !~ /[^А-пр-ёЁ]/
     end
     
     def csqueeze

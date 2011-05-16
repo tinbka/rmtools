@@ -8,16 +8,37 @@ class Hash
     merge(other_hash || {})
   end
   
+if RUBY_VERSION >= '1.9.2'
+  def unify_keys
+    keys.each {|k|
+      case k
+      when String
+        sk = k.to_sym
+        self[sk] = self[k] if !self[sk]
+      when Symbol, Numeric
+        sk = k.to_s
+        self[sk] = self[k] if !self[sk]
+      end
+    }
+    self
+  end
+else
   def unify_keys
     each {|k, v|
-      if k.is String
+      case k
+      when String
         sk = k.to_sym
         self[sk] = v if !self[sk]
-      elsif k.is Symbol
+      when Symbol, Numeric
         sk = k.to_s
         self[sk] = v if !self[sk]
       end
     }
+  end
+end
+
+  def any?
+    !empty?
   end
   
   def max_by_key; [(m = keys.max), self[m]] end

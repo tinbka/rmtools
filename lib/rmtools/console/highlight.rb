@@ -8,7 +8,7 @@ class String
     when Regexp; self =~ pat
     else raise TypeError, "pattern must be string or regexp"
     end
-    puts RMTools.ghl(self[[idx-range, 0].max, 2*range], pat)
+    puts Painter.ghl(self[[idx-range, 0].max, 2*range], pat)
   end
   
 end

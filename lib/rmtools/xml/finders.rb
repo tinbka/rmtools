@@ -11,9 +11,11 @@ module LibXML::XML
     node.is(Array) && node.size == 1 ? node[0] : node
   }
   FindByProc = lambda {|node, ns, ss|
+    str_to_eval = ss.matched[1..-2]
+    '_' >> str_to_eval if !str_to_eval['_']
     node = node.is(Array) ?
-      node.sum {|n| n.__find(nil, ns, ss).select(&ss.matched[1..-2]).to_a} : 
-                      node.__find(nil, ns, ss).select(&ss.matched[1..-2])
+      node.sum {|n| n.__find(nil, ns, ss).select{|_| eval str_to_eval}.to_a} : 
+                      node.__find(nil, ns, ss).select{|_| eval str_to_eval}
     node.is(Array) && node.size == 1 ? node[0] : node
   }
     

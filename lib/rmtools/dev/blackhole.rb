@@ -6,7 +6,7 @@ class BlackHole
   # => #<BlackHole:0xb66367b0>
   # 
   # Think twice before use it. It may devour your code!
-  def method_missing *args
+  def method_missing(*)
     BlackHole.new
   end
   

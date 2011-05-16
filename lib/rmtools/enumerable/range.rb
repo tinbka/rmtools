@@ -42,11 +42,11 @@ class Range
     (self.begin <=> range.begin).b || self.include_end.end <=> range.include_end.end 
   end
   
-  def include_end() 
+  def include_end
     exclude_end? ? self.begin..(self.end - 1) : self 
   end
   
-  def center() 
+  def center
     (first + last + (!exclude_end?).to_i)/2 
   end
   
@@ -54,7 +54,7 @@ class Range
     first + (i-1)*size/j .. first - 1 + i*size/j unless i < 1 or j < 1 or j < i 
   end
   
-  def size() 
+  def size
     last - first + (!exclude_end?).to_i 
   end
   
@@ -91,6 +91,34 @@ class Range
   def evens
     select {|i| i%2 == 0}
   end
+  
+  def sum
+    ie = include_end.end
+    return (1..ie).sum - (0..-self.begin).sum if self.begin < 0
+    return 0 if ie < self.begin
+    ie*(ie+1)/2 - (1..self.begin-1).sum
+  end
+  
+  # monotone function definition interval min/max border
+  def min(&fun)
+    return first if yield first
+    return unless yield last
+    if yield(c = center)
+      (first+1..c-1).min(&fun) || c
+    else
+      (c+1..last).min(&fun)
+    end
+  end 
+  
+  def max(&fun)
+    return last if yield last
+    return unless yield first
+    if yield(c = center)
+      (c+1..last-1).max(&fun) || c
+    else 
+      (first..c-1).max(&fun)
+    end
+  end 
   
 end
 

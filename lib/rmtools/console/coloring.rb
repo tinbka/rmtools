@@ -3,11 +3,7 @@ RMTools::require 'enumerable/hash'
 
 module RMTools
 
-  class Coloring
-    __init__
-    method_defined? :b and undef_method :b
-    method_defined? :p and undef_method :p
-        
+  class Painter
     if !defined? ::BOLD
       BOLD = 1
       UNDERLINE = 4
@@ -30,45 +26,65 @@ module RMTools
                       :b => 1, :u => 4, :gbg => 5, :bbg => 7
                   }.unify_keys   
     end
-        
-    def paint(str, num=nil, effect=nil)
-      # default cmd.exe cannot into ANSI
-      return str if ENV['ComSpec'] =~ /cmd(.exe)?$/
-      num = Colors[num] if num.is String
-      effect = Effects[effect] if effect.is String
-      if num and effect
-        "\e[#{effect};#{num}m#{str}\e[m"
-      elsif effect
-        "\e[#{effect}m#{str}\e[m"
-      elsif num
-        "\e[#{num}m#{str}\e[m"
-      else str    
-      end 
-    end
-        
-    def method_missing(m, str)
-      paint str, *(m.to_s/"_")
-    end
-        
-    def clean str
-      str.gsub(/\e\[.*?m/, '')
+                
+    class << self    
+      method_defined? :b and undef_method :b
+      method_defined? :p and undef_method :p  
+      
+      def paint(str, transparent, num=nil, effect=nil)
+        # default cmd.exe cannot into ANSI
+        str = str.to_s
+        return str if ENV['ComSpec'] =~ /cmd(.exe)?$/
+        if num.is String
+          num = Colors[num]
+          effect = Effects[num] if !num
+        end
+        effect = Effects[effect] if effect.is String
+        if num and effect
+          str = str.gsub("\e[m", "\e[m\e[#{effect};#{num}m") if transparent
+          "\e[#{effect};#{num}m#{str}\e[m"
+        elsif effect
+          str = str.gsub("\e[m", "\e[m\e[#{effect}m") if transparent
+          "\e[#{effect}m#{str}\e[m"
+        elsif num
+          str = str.gsub("\e[m", "\e[m\e[#{num}m") if transparent
+          "\e[#{num}m#{str}\e[m"
+        else str    
+        end 
+      end
+      
+      #     puts "words have one #{Painter.red_bold 'highlighted'} among them"
+      # <default>words have one <red>highlighted</red> among them</default>
+      #     puts Painter.gray "words have one #{Painter.red_bold 'highlighted'} among them"
+      # <gray>words have one </gray><red>highlighted</red><default> among them</default>
+      #     puts Painter.gray "words have one #{Painter.red_bold 'highlighted'} among them", true
+      # <gray>words have one <red>highlighted</red> among them</gray>
+      #
+      # Actually, transparent coloring is slower
+      def method_missing(m, str, transparent=false)
+        paint str, transparent, *(m.to_s/"_")
+      end
+          
+      def clean str
+        str.gsub(/\e\[[\d;]*m/, '')
+      end
+
+      ['sub', 'gsub', 'sub!', 'gsub!'].each {|m| 
+        class_eval %{
+      def #{m.sub'sub','hl'} str, pattern, color=:red_bold
+        str.#{m} pattern do |word|
+          if str[/^\\e\\[(\\d+(;\\d+)?)/]
+            "\\e[m\#{send(color, word)}\\e[\#$1m"
+          else
+            send(color, word)
+          end
+        end
+      end
+      }
+      }
+      
     end
     
   end
-  
-  Painter = Coloring.new
-  ['sub', 'gsub', 'sub!', 'gsub!'].each {|m| 
-    Coloring.module_eval "
-    def #{m.sub('sub') {'hl'}} str, pattern, color=:red_bold
-        str.#{m}(pattern) {|word| send color, word}
-    end
-  "
-    module_eval "
-    def #{m.sub('sub') {'hl'}} str, pattern, color=:red_bold
-        str.#{m}(pattern) {|word| Painter.send color, word}
-    end
-  "
-  #      module_function m.to_sym
-  }
   
 end

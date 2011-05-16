@@ -3,7 +3,7 @@ module Kernel
   
   # re-require
   def require!(file)
-    %w{.rb .so .dll}.each {|ext| $".delete "#{file}#{ext}"}
+    ['.rb', '.so', '.dll', ''].each {|ext| $".delete "#{file}#{ext}"}
     require file
   end
 
@@ -24,6 +24,42 @@ module Kernel
     
   def executing? file=$0
     caller(0)[0] =~ /^#{file}:/
+  end
+  
+  def whose?(method, *opts)
+    opts = opts.get_opts [:flags], :ns => :public
+    checker = :"#{ns}_method_defined?"
+    if Array === method
+      methods = method.to_syms
+    else 
+      methods = [method = method.to_sym]
+    end
+    if defined? ActiveSupport::JSON::CircularReferenceError
+      ActiveSupport::JSON.__send__ :remove_const, :CircularReferenceError
+    end
+    classes = {}
+    
+    methods.each {|m|
+        classes[m] = {Object => true} if Object.send checker, m and (
+          !opts[:modules] or 
+          Object.included_modules.select {|mod| (checker[m] ||= {})[mod] = true if mod.__send__ checker, m}.empty?
+        )
+    }
+    methods -= classes.keys
+    return classes.map_values {|h| h.keys} if methods.empty?
+    
+    klass = opts[:modules] ? Module : Class
+    ObjectSpace.each_object {|o| 
+      methods.each {|m| (classes[m] ||= {})[o] = true if o.name != '' and o.__send__ checker, m} if klass === o
+    }
+    classes.map_values! {|h| 
+      if !opts[:descendants]
+        h.each {|c, b| h[c] = nil if (c.is Class and h.key? c.superclass) or (opts[:modules] and c.included_modules.find {|a| h.key? a})}
+      end
+      h.map {|c,b| b && c}.compact
+    }
+    
+    Array === method ? classes : classes[method]
   end
   
 end

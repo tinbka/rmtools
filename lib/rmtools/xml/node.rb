@@ -117,7 +117,7 @@ module LibXML::XML
         attributes.to_hash
       end
       
-      %w{style id width height onclick ondbclick onmousedown onmousemove onmouseout onmouseover onmouseup src onerror onload href type value size onchange onselect onblur onfocus onfocusin onfocusout onkeydown onkeypress onkeyup action target enctype onsubmit checked selected}.each {|name|
+      %w{style id width height onclick ondblclick oncontextmenu onmousedown onmousemove onmouseout onmouseover onmouseup src onerror onload href type value size onchange onselect onblur onfocus onfocusin onfocusout onkeydown onkeypress onkeyup action target enctype onsubmit checked selected disabled}.each {|name|
         define_method(name) {self[name]}
         define_method(name+'=') {|value| self[name] = value}
       }

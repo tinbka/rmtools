@@ -36,7 +36,7 @@ class Object
   end
   
   def readable_variables
-    public_methods.to_ss & instance_variables.map(&'[1..-1]')
+    public_methods.to_ss & instance_variables.map {|v|v[1..-1]}
   end
   
   def load_from(obj)

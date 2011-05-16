@@ -1,6 +1,7 @@
 # encoding: utf-8
 # js hash getter/setter and string concat logic
 class Hash
+  alias :throw_no :method_missing
   
   # hash = {}
   # hash.abc = 123
@@ -10,14 +11,14 @@ class Hash
   # hash.unknown_function # => nil
   # hash[:def] = 456
   # hash.def # => 456
-  def method_missing(met, *args)
-    str = met.id2name
-    if str[/=$/]
+  def method_missing(method, *args)
+    str = method.to_s
+    if str =~ /=$/
       self[str[0..-2]] = args[0]
     else
-      raise NoMethodError, "undefined method `#{str}' for #{self}:#{(self.class)}" if !args.empty?
+      throw_no method if !args.empty? or str =~ /[!?]$/
       a = self[str]
-      (a == default) ? self[met] : a
+      (a == default) ? self[method] : a
     end
   end
 

@@ -39,6 +39,11 @@ class Class
     (self.public_instance_methods - self.superclass.public_instance_methods).sort!.grep(filter)
   end
   
+  # differs with #ancestors in that it doesn't show included modules
+  def superclasses
+    unfold(lambda {|c|!c}) {|c| [c.superclass, c]} 
+  end
+  
 end
 
 [Hash, Regexp, File, Dir].each {|klass| klass.__init__}

@@ -10,15 +10,18 @@ class Array
   # and get `a' from `'opts' hash
   def fetch_opts(defaults=[], opts={})
     if Hash === defaults
-      opts = defaults
-      defaults = []
-      $log.warn "fetch_opts(<hash>) now changed"
+      opts, defaults = defaults, []
+      return_hash = true
+      $log.warn "fetch_opts(<hash>) now changed, if you want to jsut fetch hash options, use `opts = <hash>.merge(opts||{})' construction"
+    else
+      return_hash = false
     end
-    opts &&= if self[-1].kind_of?(Hash) and !defaults[size-1].kind_of?(Hash)
+    opts &&= if Hash === self[-1] and !(Hash === defaults[size-1])
       opts.merge pop
     else
       opts.dup
     end
+    return opts if return_hash
     if defaults == :flags
       defauls = [:flags]
     end

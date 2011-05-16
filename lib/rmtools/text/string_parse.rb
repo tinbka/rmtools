@@ -4,7 +4,7 @@ RMTools::require 'conversions/string'
 class String
   CALLER_RE =    %r{^(.*?([^/\\]+?))#{	    # ( path ( file ) ) 
                               }:(\d+)(?::in #{	      # :( line )[ :in
-                              }[`<]([^'>]+)[>']#{   # `( closure )' ]
+                              }[`<](.+?)[>']#{   # `( closure )' ]
                             })?$}
   URL_RE = %r{^((?:([^:]+)://)#{	            #  ( protocol
                       }([^/:]*(?::(\d+))?))?#{	  #  root[:port] )

@@ -1,5 +1,5 @@
 # encoding: utf-8
-RMTools::require 'lang/shortcuts'
+RMTools::require 'lang/helpers'
 
 class String
   
@@ -32,7 +32,7 @@ class String
         rescue
           if enc = xml_charset
             XML::HTMLParser.string(str, :options => 97, 
-                           :encoding => eval('XML::Encoding::'+enc.upcase.tr('-','_'))).parse
+                           :encoding => XML::Encoding.const_get(enc.upcase.tr('-','_').to_sym)).parse
           else to_doc :force
           end
         end   

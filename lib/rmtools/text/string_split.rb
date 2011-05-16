@@ -3,10 +3,6 @@ RMTools::require 'text/string_simple'
 RMTools::require 'enumerable/array_iterators'
 
 class String
-    
-  def rsplit(splitter=$/, qty=0)
-    reverse.split(splitter, qty).reverse.reverses
-  end
   
   # Same as split, but without :reject_splitter option keeps splitters on the left of parts
   # with :report_headers option collects all regexp'ed splitters along with result array
@@ -48,7 +44,7 @@ class String
     
     def div(len, *)
       if !len.is Fixnum
-        deprecation "Use #sharp_split instead."
+        deprecate_method "Use #sharp_split instead."
         return sharp_split len
       end
       return [self] if len <= 0

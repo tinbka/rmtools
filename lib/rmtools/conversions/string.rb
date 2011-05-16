@@ -3,8 +3,8 @@ require 'cgi'
 
 class String
 
-  # with default delimiters - inversion of #urlencode
-  def to_hash(unscp=true, params_delim='&', k_v_delim='=')
+  # with default delimiters - the opposite of #urlencode
+  def to_params(unscp=true, params_delim='&', k_v_delim='=')
     params = split(params_delim)
     h = {}
     params.each {|par|
@@ -18,7 +18,7 @@ class String
     h
   end
   
-  # inversion of #to_json
+  # the opposite of #to_json
   # active support activesupport
   def from_json
     ActiveSupport::JSON.decode self

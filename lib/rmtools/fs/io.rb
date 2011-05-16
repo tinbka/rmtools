@@ -48,9 +48,9 @@ module RMTools
       if File.file?(df)
         File.open(df, File::RDONLY) {|f| f.read}
       else
-        STDERR.puts "couldn't read from #{df.inspect}; file missed"
+        warn "couldn't read from #{df.inspect}; file missed"
       end
     end
   
-  module_function :rw, :write, :read
+  module_function :read, :write, :rw
 end

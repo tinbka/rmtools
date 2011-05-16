@@ -33,18 +33,22 @@ module RMTools
       return if !lines or lines.empty?
       str = ""
       last = lines.max
+      lines_found = false
       if File.file?(df)
         File.open(df, 'r') {|f|
           f.each {|line|
               no = f.lineno
-              str << line if no.in lines
+              if no.in lines
+                str << line 
+                lines_found = true
+              end
               break if no == last
         }}
-        str
+        lines_found && str
       else
         STDERR.puts "#{df} is missed!"
       end
     end
-    
+      
   module_function :tail, :tail_n, :read_lines
 end

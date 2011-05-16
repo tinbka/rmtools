@@ -18,16 +18,24 @@ unless defined? RMTools::Iterators
     
     def method_missing(method, *args, &block)
       if match = (meth = method.to_s).match(RMTools::Iterators)
-        iterator, meth = match[1..2]
-        meth = meth.to_sym
-        return send(iterator) {|i| i.__send__ meth, *args, &block}
+        iterator, meth = match[1], match[2].to_sym
+        begin
+          return iterator == :sum ?
+            __send__(iterator, args.shift) {|i| i.__send__ meth, *args, &block}: 
+            __send__(iterator) {|i| i.__send__ meth, *args, &block}
+        rescue NoMethodError => e
+          e.message << " (`#{method}' interpreted as decorator-function `#{meth}')"
+          raise e
+        end
       elsif meth.sub!(/sses([!?]?)$/, 'ss\1') or meth.sub!(/ies([!?]?)$/, 'y\1') or meth.sub!(/s([!?]?)$/, '\1')
-        return map {|i| i.__send__ meth.to_sym, *args, &block}
-      else
-        throw_no method
-      end
-    rescue NoMethodError
-      throw_no method
+        meth = meth.to_sym
+        begin return map {|i| i.__send__ meth, *args, &block}
+        rescue NoMethodError => e
+          e.message << " (`#{method}' interpreted as map-function `#{meth}')"
+          raise e
+        end
+      else throw_no method
+      end      
     end
   end
 

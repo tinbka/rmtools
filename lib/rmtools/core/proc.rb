@@ -16,7 +16,7 @@ class Proc
   end
   
   if RUBY_VERSION < '1.9'
-    def source_location; str.match(/([^@]+):(\d+)>$/)[1..2] end
+    def source_location; to_s.match(/([^@]+):(\d+)>$/)[1..2] end
   end
   
 end

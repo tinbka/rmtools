@@ -13,17 +13,18 @@ module RMTools
     attr_reader :default_format
         
     Modes = [:debug, :log, :info, :warn]
-    NOPRINT = 4
-    NOLOG = 2
+    NOPRINT = 8
+    NOLOG = 4
+    PREV_CALLER = 2
     INLINE = 1
   
     def initialize format={}
-      @clr = Coloring.new
+      @c = Painter
       @highlight = {
-          :warn => @clr.red_bold("WARN"),
-          :log => @clr.cyan("INFO"),
-          :info => @clr.cyan_bold("INFO"),
-          :debug => @clr.gray_bold("DEBUG")
+          :warn => @c.red_bold("WARN"),
+          :log => @c.cyan("INFO"),
+          :info => @c.cyan_bold("INFO"),
+          :debug => @c.gray_bold("DEBUG")
       }
       @file_formats = Hash.new(@default_format = {})
       set_format :global, format
@@ -36,7 +37,7 @@ module RMTools
       file.path_format = '%'.in file.out if file.out
       file.tf   = format.time.to_a
       file.cf0 = format.caller
-      file.cf = file.cf0.sub('%p'){'\1'}.sub('%f'){'\2'}.sub('%l'){'\3'}.sub('%m'){'\4'}
+      file.cf = file.cf0.sub('%p') {'\1'}.sub('%f') {'\2'}.sub('%l') {'\3'}.sub('%m') {'\4'}
       file.fmt = format.format
       file._time, file._caller = '%time'.in(file.fmt), '%caller'.in(file.fmt)
     end
@@ -45,7 +46,7 @@ module RMTools
       puts %{            :q => false,   # not print
             :out => false, # output to file, may have strftime's %H%M%Y for filename
             :time => ["%H:%M:%S", "%03d"], # strftime, [msecs]
-            :caller => "#{@clr.gray('%f:%l')} #{@clr.red_bold(':%m')}", # file:line :method
+            :caller => "#{@c.gray('%f:%l')} #{@c.red_bold(':%m')}", # file:line :method
             :format => "%time %mode [%caller]: %text" # no comments} 
     end
           
@@ -53,7 +54,7 @@ module RMTools
     def set_format *args
       global, format = args.fetch_opts [nil], 
                             :time => ["%H:%M:%S", "%03d"], 
-                            :caller => "#{@clr.gray('%f:%l')} #{@clr.red_bold(':%m')}", 
+                            :caller => "#{@c.gray('%f:%l')} #{@c.red_bold(':%m')}", 
                             :format => "%time %mode [%caller]: %text"
       if global
         _set_format @default_format, format
@@ -91,18 +92,16 @@ module RMTools
         end
         out = now.strftime cfg.out if cfg.path_format
       end
-      str.sub! "%caller", caler.sub(String::CALLER_RE, cfg.cf) if caler
-      log_str = @clr.clean str
+      if caler
+        str.sub! "%caller", caler.sub(String::CALLER_RE, cfg.cf)
+      end
+      log_str = @c.clean str
       RMTools.write out, log_str if log_
       Kernel.print str if print_
     end
-          
-    def check_binding a
-      a[0].is(Binding) ? [a[0], a[1] || 0] : [nil, a[0] || 0]
-    end
         
     def get_config!
-      @file_formats.empty? ? @default_format : @file_formats[File.expand_path(caller(2)[0].till ':')]
+      @file_formats.empty? ? @default_format : @file_formats[File.expand_path((@current_caller = caller)[1].till ':')]
     end
         
     # controllers:
@@ -113,62 +112,62 @@ module RMTools
     #                       this messages regardless of any globals
     # - @out_all: write to file any messages
         
-    def warn text="\b\b ", *a
+    def warn *args
       cfg = get_config!
       if (cfg.out or cfg.print) && !@mute_warn
-        bind, opts = check_binding a
-        opts |= NOLOG if !cfg.out
-        opts |= NOPRINT if !cfg.print
-        text = yield if block_given?
-        _print(:warn, text, opts, cfg._caller && caller[0], bind, cfg)
+        text, bind, opts = args.get_opts [!block_given? && args[0].is(Hash) ? args[0] : "\b\b ", nil], :mute => 0
+        opts[:mute] |= NOLOG if !cfg.out
+        opts[:mute] |= NOPRINT if !cfg.print
+        return if block_given? && (text = yield).nil?
+        _print(:warn, text, opts[:mute], cfg._caller && (@current_caller || caller)[opts[:caller].to_i], bind, cfg)
       end  
     end
         
-    def log text="\b\b ", *a
+    def log *args
       cfg = get_config!
       if (cfg.out or cfg.print && !$quiet && $verbose) && !@mute_log
-        bind, opts = check_binding a
-        opts |= NOLOG if !cfg.out
-        opts |= NOPRINT if !(cfg.print && !$quiet && $verbose)
-        text = yield if block_given?
-        _print(:log, text, opts, cfg._caller && caller[0], bind, cfg)
+        text, bind, opts = args.get_opts [!block_given? && args[0].is(Hash) ? args[0] : "\b\b ", nil], :mute => 0
+        opts[:mute] |= NOLOG if !cfg.out
+        opts[:mute] |= NOPRINT if !(cfg.print && !$quiet && $verbose)
+        return if block_given? && (text = yield).nil?
+        _print(:log, text, opts[:mute], cfg._caller && (@current_caller || caller)[opts[:caller].to_i], bind, cfg)
       end
     end
             
-    def info text="\b\b ", *a
+    def info *args
       cfg = get_config!
       if (cfg.print && !$quiet or cfg.out && cfg.out_all) && !@mute_info
-        bind, opts = check_binding a
-        opts |= NOLOG if !(cfg.out && cfg.out_all)
-        opts |= NOPRINT if !(cfg.print && !$quiet)
-        text = yield if block_given?
-        _print(:info, text, opts, cfg._caller && caller[0], bind, cfg)
+        text, bind, opts = args.get_opts [!block_given? && args[0].is(Hash) ? args[0] : "\b\b ", nil], :mute => 0
+        opts[:mute] |= NOLOG if !(cfg.out && cfg.out_all)
+        opts[:mute] |= NOPRINT if !(cfg.print && !$quiet)
+        return if block_given? && (text = yield).nil?
+        _print(:info, text, opts[:mute], cfg._caller && (@current_caller || caller)[opts[:caller].to_i], bind, cfg)
       end 
     end
           
-    def debug text="\b\b ", *a
+    def debug *args
       cfg = get_config!
       if (cfg.print && $panic && !$quiet or cfg.out && cfg.out_all) && !@mute_debug
-        bind, opts = check_binding a
-        opts |= NOLOG if !(cfg.out && cfg.out_all)
-        opts |= NOPRINT if !(cfg.print && $panic && !$quiet)
-        text = yield if block_given?
-        _print(:debug, text, opts, cfg._caller && caller[0], bind, cfg)
+        text, bind, opts = args.get_opts [!block_given? && args[0].is(Hash) ? args[0] : "\b\b ", nil], :mute => 0
+        opts[:mute] |= NOLOG if !(cfg.out && cfg.out_all)
+        opts[:mute] |= NOPRINT if !(cfg.print && $panic && !$quiet)
+        return if block_given? && (text = yield).nil?
+        _print(:debug, text, opts[:mute], cfg._caller && (@current_caller || caller)[opts[:caller].to_i], bind, cfg)
       end 
     end
           
+    alias <= debug
     alias << info
     alias <   warn
         
     Modes.each {|m| define_method("#{m}=") {|mute| send :"mute_#{m}=", !mute}}
-          
-    def outall=(x) @default_format.out_all = x end
-    def print=(x) @default_format.print = x end  
-    def out=(x) @default_format.out = x end
-        
-    def out_all() @default_format.out_all end
-    def print() @default_format.print end  
-    def out() @default_format.out end
+    
+    %w(out_all print out).each {|m| 
+      define_method m do @default_format.__send__ m.to_sym 
+      end
+      define_method m+'=' do |x| @default_format.__send__ :"#{m}=", x
+      end
+    }
         
     def inspect() get_format end
           

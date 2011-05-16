@@ -1,5 +1,5 @@
 # encoding: utf-8
-RMTools::require 'debug/binding'
+RMTools::require 'dev/binding'
 require 'active_support/core_ext/class'
 
 module RMTools
@@ -16,7 +16,10 @@ module RMTools
     
     @@binding_stack = []
     DefaultRescue = lambda {|e| 
+        stop
         @@binding_stack.inspect_envs.present
+        require 'irb'
+        IRB.start('/usr/bin/irb18')
         @@binding_stack.last.start_interaction
         raise e
     }
@@ -35,7 +38,7 @@ module RMTools
     end
     
     def self.update_ignore
-      @@ignore_path = %r{(/usr/lib/ruby/(1.8/|gems/1.8/gems/#{
+      @@ignore_path = %r{^(/usr/lib/ruby/(1.8/|gems/1.8/(bundler/)?gems/#{
         "(#{@@ignore_gems*'|'})" if !@@ignore_all_gems and @@ignore_gems
       })#{
         "|(#{@@ignore_names*'|'})" if @@ignore_names.b
@@ -61,6 +64,8 @@ module RMTools
     end
     
     def self.catch(rescue_proc=DefaultRescue)
+      update_ignore
+      start
       begin yield
       rescue => e
         @@keep_binding_stack = false
@@ -70,10 +75,39 @@ module RMTools
           @@binding_stack.clear
         end
       end
+      stop
     end
     
     def self.stop
       set_trace_func nil
+    end
+    
+    def self.trace_calls(out='log/calltrace.log')
+      logger = RMLogger.new :out => out, :format => '[%time]: %text'
+      offset, last_logline, quo, quos = 0, nil, 1, ''
+      set_trace_func lambda {|event, file, line, id, binding, classname| 
+        if event == 'call' or event == 'c-call' or event == 'raise'
+          logline = "#{quos}\n#{'  '*([offset, 0].max)}#{classname}##{id} < #{file} > #{event=='c-call' ? '[CC]' : event == 'raise' ? '[RAISE]' : ''}"
+          if last_logline != logline
+            logger.log(last_logline = logline, RMLogger::INLINE) 
+            quo = 1
+            quos = ''
+          else
+            quo += 1
+            quos = " x#{q}"
+          end 
+        end
+        if event == 'call' or event == 'c-call'
+          offset += 1
+        elsif event == 'return' or event == 'c-return'
+          offset -= 1
+        end
+      }
+      begin yield
+      rescue Exception
+        nil
+      ensure set_trace_func nil
+      end
     end
     
   end

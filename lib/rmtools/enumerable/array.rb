@@ -18,7 +18,7 @@ class Array
     case top
       when Numeric; ratio = max.to_f/top
       when Array; ratio = zip(top).map {|a,b| b ? a.to_f/b : 0}.max
-      else raise TypeError, "number or array of numbers expceted, #{top.class} given"
+      else raise TypeError, "number or array of numbers expected, #{top.class} given"
     end
     map {|e| e/ratio}
   end
@@ -105,10 +105,12 @@ class Array
   #   when [/\d/, '10']; '%*d'%[a, b]
   #   ...
   # end
+  #
+  # symbol :~ stands for Object
   def ===(obj)
     return true if casecmp(obj) 
     !!(obj.kinda(Array) and obj.size == size and 
-        each_with_index {|e, i| e == :_ or e === obj[i] or return false})
+        each_with_index {|e, i| e == :~ or e === obj[i] or return false})
   end
   
   
@@ -130,5 +132,14 @@ class Array
   
   # fastering activesupport's method
   def group_by(&b) count(:group, &b) end
+  
+  
+  
+  
+  # rightmost #find
+  def rfind
+    reverse_each {|e| return e if yield e}
+    nil
+  end
   
 end

@@ -1,6 +1,6 @@
 # encoding: utf-8
-RMTools::require 'debug/logging'
-RMTools::require 'debug/present'
+RMTools::require 'dev/logging'
+RMTools::require 'dev/present'
 
 class Binding
   
@@ -12,13 +12,29 @@ class Binding
   
   def inspect_instance_variables
     vars = self.eval('instance_variables') # ['@a', '@b']
-    values = self.eval "[#{vars * ','}]" # ["@a's value", "@b's value"]
-    Hash[vars.zip(values)]
+    if vars and vars.any?
+      values = self.eval "[#{vars * ','}]" # ["@a's value", "@b's value"]
+      Hash[vars.zip(values)]
+    else {}
+    end
+  end
+  
+  def inspect_class_variables
+    vars = self.eval('self.class.class_variables') # ['@@a', '@@b']
+    if vars and vars.any?
+      values = self.eval "{#{vars.map {|v| "'#{v}'=>defined?(#{v})&&#{v}"} * ','}}" # ["@@a's value", "@@b's value"]
+      #Hash[vars.zip(values)]
+    else {}
+    end
+  end
+  
+  def inspect_special_variables
+    Hash[self.eval(%[{"self" => self, #{['!', '`', '\'', '&', '~', *(1..9)].map {|lit| %{"$#{lit}" => $#{lit}, }}.join}}]).reject {|k,v| v.nil?}]
   end
   
   def inspect_env
-    self.eval("{'self' => self}").merge(inspect_local_variables).merge(inspect_instance_variables)
-  end
+    inspect_local_variables + inspect_instance_variables + inspect_class_variables + inspect_special_variables
+  end 
   
   def valid_types(pattern_ary)
     self.eval("[#{self.eval('local_variables')*','}]").valid_types(pattern_ary)
@@ -34,12 +50,12 @@ class Binding
   
   # it's supposed to be called during TDD in an IRB session
   # $__MAIN__ must be `self' or root IRB session, i.e. `main' object
-  # def tested_function
-  #   blah blah blah
-  # rescue => err
-  #   binding.start_interaction
-  #   raise err
-  # end
+  #   def tested_function
+  #     blah blah blah
+  #   rescue => err
+  #     binding.start_interaction
+  #     raise err
+  #   end
   def start_interaction(sandbox=true)
     $__env__ = inspect_env
     puts "Caller trace:"

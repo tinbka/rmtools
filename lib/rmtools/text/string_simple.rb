@@ -2,10 +2,10 @@
 class String
   
   def inline
-    count("\n") == 0
+    index("\n").nil?
   end
     
-  def lchomp(match)
+  def lchomp(match=/\r\n?/)
     if index(match) == 0
       self[match.size..-1]
     else
@@ -13,7 +13,7 @@ class String
     end
   end
 
-  def lchomp!(match)
+  def lchomp!(match=/\r\n?/)
     if index(match) == 0
       self[0...match.size] = ''
       self
@@ -68,6 +68,14 @@ class String
     
   def to_re(esc=false)
     Regexp.new(esc ? Regexp.escape(self) : self)
+  end
+  
+  #    "b ц ~ \255 秀".bytes
+  ### => ["62", "20", "d1", "86", "20", "7e", "20", "ad", "20", "e7", "a7", "80"]
+  def bytes
+    arr = []
+    each_byte {|b| arr << b.hex}
+    arr
   end
   
 end
