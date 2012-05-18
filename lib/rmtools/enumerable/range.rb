@@ -28,6 +28,11 @@ class Range
     self & -range
   end
   
+  def ^(range)
+    common = self & range
+    self - common | range - common
+  end
+  
   def x?(range)
     range_end = range.include_end.end
     self_end = self.include_end.end
@@ -169,6 +174,11 @@ class XRange
     self & -range
   end
   
+  def ^(range)
+    common = self & range
+    self - common | range - common
+  end
+  
 private
   
   def intersect(range)
@@ -192,11 +202,19 @@ public
   end
   
   def empty?
-    @range.empty?
+    @ranges.empty?
   end
   
   def include?(number_or_range)
-    @ranges.find_include?(number_or_range)
+    @ranges.find {|r| r.include?(number_or_range)}
+  end
+  
+  def begin
+    @ranges[0].begin
+  end
+  
+  def end
+    @ranges[-1].end
   end
   
   def size

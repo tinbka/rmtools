@@ -30,7 +30,7 @@ class String
                 'pathname'	=> m[5] || '/',
                 'path'	      => m[6] || '',
                 'ext'	        => m[7],
-                'query'	      => m[8] && m[8].to_hash(false),
+                'query'	      => m[8] && m[8].to_params(false),
                 'anchor'	    => m[9] }
         when :caller
           m = match CALLER_RE

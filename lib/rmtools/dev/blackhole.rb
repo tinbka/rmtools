@@ -6,8 +6,16 @@ class BlackHole
   # => #<BlackHole:0xb66367b0>
   # 
   # Think twice before use it. It may devour your code!
-  def method_missing(*)
-    BlackHole.new
+  def method_missing(m, *args)
+    case m.to_s[-1,1]
+    when '?'; false
+    when '!'; nil
+    when '='; args.first
+    else self
+    end
   end
   
+  if RUBY_VERSION < '1.9'
+    undef id
+  end
 end

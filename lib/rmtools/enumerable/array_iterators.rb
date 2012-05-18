@@ -14,22 +14,37 @@ unless defined? RMTools::Iterators
   # => [[1, 2, 3], [3, 4, 6]]
   class Array
     alias :throw_no :method_missing
-    RMTools::Iterators = %r{(#{(%w{select reject partition find_all find sum foldr min max}+instance_methods.grep(/_by$/))*'|'})_([\w\d\_]+[!?]?)}
+    RMTools::Iterators = %r{^(#{(instance_methods.grep(/_by$/)+%w{every no select reject partition find_all find sum foldr find_by select_by})*'|'})_([\w\d\_]+[!?]?)}
     
     def method_missing(method, *args, &block)
       if match = (meth = method.to_s).match(RMTools::Iterators)
-        iterator, meth = match[1], match[2].to_sym
+        iterator, meth = match[1].to_sym, match[2].to_sym
         begin
-          return iterator == :sum ?
-            __send__(iterator, args.shift) {|i| i.__send__ meth, *args, &block}: 
-            __send__(iterator) {|i| i.__send__ meth, *args, &block}
+          case iterator
+          when :every then iterator = :every?
+          when :no     then iterator = :no?
+          end
+          return case iterator
+            when :sum;     sum(args.shift) {|i| i.__send__ meth, *args, &block}
+            when :find_by; find_by(meth, *args)
+            else __send__(iterator) {|i| i.__send__ meth, *args, &block}
+            end
         rescue NoMethodError => e
           e.message << " (`#{method}' interpreted as decorator-function `#{meth}')"
           raise e
         end
-      elsif meth.sub!(/sses([!?]?)$/, 'ss\1') or meth.sub!(/ies([!?]?)$/, 'y\1') or meth.sub!(/s([!?]?)$/, '\1')
+      elsif meth.sub!(/sses([=!?]?)$/, 'ss\1') or meth.sub!(/ies([=!?]?)$/, 'y\1') or meth.sub!(/s([=!?]?)$/, '\1')
+        assignment = meth =~ /=$/
         meth = meth.to_sym
-        begin return map {|i| i.__send__ meth, *args, &block}
+        begin 
+          if assignment
+            if Array === args
+                each_with_index {|e,i| e.__send__ meth, args[i]}
+            else
+                each {|e| e.__send__ meth, args}
+            end
+          else map {|e| e.__send__ meth, *args, &block}
+          end
         rescue NoMethodError => e
           e.message << " (`#{method}' interpreted as map-function `#{meth}')"
           raise e

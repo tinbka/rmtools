@@ -3,11 +3,6 @@ RMTools::require 'lang/ansi'
 
 class String
   include RMTools::Cyrillic
-  
-    def cyr_ic
-      gsub(/[ёЁ]/, '[ёЁ]').gsub(/[йЙ]/, '[йЙ]').gsub(/[цЦ]/, '[цЦ]').gsub(/[уУ]/, '[уУ]').gsub(/[кК]/, '[кК]').gsub(/[еЕ]/, '[еЕ]').gsub(/[нН]/, '[нН]').gsub(/[гГ]/, '[гГ]').gsub(/[шШ]/, '[шШ]').gsub(/[щЩ]/, '[щЩ]').gsub(/[зЗ]/, '[зЗ]').gsub(/[хХ]/, '[хХ]').gsub(/[ъЪ]/, '[ъЪ]').gsub(/[фФ]/, '[фФ]').gsub(/[ыЫ]/, '[ыЫ]').gsub(/[вВ]/, '[вВ]').gsub(/[аА]/, '[аА]').gsub(/[пП]/, '[пП]').gsub(/[рР]/, '[рР]').gsub(/[оО]/, '[оО]').gsub(/[лЛ]/, '[лЛ]').gsub(/[дД]/, '[дД]').gsub(/[жЖ]/, '[жЖ]').gsub(/[эЭ]/, '[эЭ]').gsub(/[яЯ]/, '[яЯ]').gsub(/[чЧ]/, '[чЧ]').gsub(/[сС]/, '[сС]').gsub(/[мМ]/, '[мМ]').gsub(/[иИ]/, '[иИ]').gsub(/[тТ]/, '[тТ]').gsub(/[ьЬ]/, '[ьЬ]').gsub(/[бБ]/, '[бБ]').gsub(/[юЮ]/, '[юЮ]')
-    end
-    alias :ci :cyr_ic
 
     def translit
       gsub(/[ёЁ]/, 'yo').gsub(/[йЙ]/, 'y').gsub(/[цЦ]/, 'c').gsub(/[уУ]/, 'u').gsub(/[кК]/, 'k').gsub(/[еЕ]/, 'e').gsub(/[нН]/, 'n').gsub(/[гГ]/, 'g').gsub(/[шШ]/, 'sh').gsub(/[щЩ]/, 'sch').gsub(/[зЗ]/, 'z').gsub(/[хХ]/, 'h').gsub(/[ьЬъЪ]/, "'").gsub(/[фФ]/, 'f').gsub(/[иИыЫ]/, 'i').gsub(/[вВ]/, 'v').gsub(/[аА]/, 'a').gsub(/[пП]/, 'p').gsub(/[рР]/, 'r').gsub(/[оО]/, 'o').gsub(/[лЛ]/, 'l').gsub(/[дД]/, 'd').gsub(/[жЖ]/, 'j').gsub(/[эЭ]/, 'e').gsub(/[яЯ]/, 'ya').gsub(/[чЧ]/, 'ch').gsub(/[сС]/, 's').gsub(/[мМ]/, 'm').gsub(/[тТ]/, 't').gsub(/[бБ]/, 'b').gsub(/[юЮ]/, 'yu')
@@ -26,11 +21,7 @@ class String
       self !~ /[^А-пр-ёЁ]/
     end
     
-    def csqueeze
-      ANSI2UTF[UTF2ANSI[self].squeeze]
-    end
-    
-  if RUBY_VERSION >= "1.9"
+  if RUBY_VERSION > "1.9"
     
     def ru2en
       tr "ёйцукенгшщзхъфывапролдэячсмить/.ю?,б\"№;:жЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИВТЬБЮ", "`qwertyuiop[]asdfghjkl'zxcvbnm|/.&?,@\#$^;~QWERTYUIOP{}ASDFGHJKL:\"ZXCVBDNM<>"
@@ -52,10 +43,6 @@ class String
         tr(*ANSI_LETTERS_DC)
     end
     
-    def ccap
-      self[0].cupcase + self[1..-1]
-    end
-    
     def cuncap
       self[0].cdowncase + self[1..-1]
     end
@@ -65,8 +52,32 @@ class String
         ANSI2UTF[UTF2ANSI[self].tr(*ANSI_YOYE)]:
         tr(*ANSI_YOYE)
     end
+      
+    alias csize size
+    alias cljust ljust
+    alias cjust rjust
+    alias ccenter center
+    alias ccap capitalize
+    alias csqueeze squeeze
     
+    def ci; self end
   else
+    
+    def csize
+      UTF2ANSI[self].size
+    end
+    
+    def cljust(*args)
+      ANSI2UTF[UTF2ANSI[self].ljust(*args)]
+    end
+    
+    def crjust(*args)
+      ANSI2UTF[UTF2ANSI[self].rjust(*args)]
+    end
+    
+    def ccenter(*args)
+      ANSI2UTF[UTF2ANSI[self].center(*args)]
+    end
     
     def cupcase(encode=1)
       encode ?
@@ -88,6 +99,10 @@ class String
       self[0,2].cdowncase(encode) + self[2..-1]
     end
     
+    def csqueeze
+      ANSI2UTF[UTF2ANSI[self].squeeze]
+    end
+    
     def rmumlaut(encode=1)
       encode ?
         ANSI2UTF[UTF2ANSI[self].tr("\270\250", "\345\305")]: 
@@ -100,6 +115,10 @@ class String
     
     def en2ru
       gsub("`", "ё").gsub("q", "й").gsub("w", "ц").gsub("e", "у").gsub("r", "к").gsub("t", "е").gsub("y", "н").gsub("u", "г").gsub("i", "ш").gsub("o", "щ").gsub("p", "з").gsub("[", "х").gsub("]", "ъ").gsub("a", "ф").gsub("s", "ы").gsub("d", "в").gsub("f", "а").gsub("g", "п").gsub("h", "р").gsub("j", "о").gsub("k", "л").gsub("l", "д").gsub(";", "ж").gsub(":", "Ж").gsub("'", "э").gsub("z", "я").gsub("x", "ч").gsub("c", "с").gsub("v", "м").gsub("b", "и").gsub("n", "т").gsub("m", "ь").gsub(",", "б").gsub(".", "ю").gsub("/", ".").gsub("|", "/").gsub("?", ",").gsub("\"", "Э").gsub("@", "\"").gsub("#", "№").gsub("$", ";").gsub("^", ":").gsub("&", "?").gsub("~", "Ё").gsub("Q", "Й").gsub("W", "Ц").gsub("E", "У").gsub("R", "К").gsub("T", "Е").gsub("Y", "Н").gsub("U", "Г").gsub("I", "Ш").gsub("O", "Щ").gsub("P", "З").gsub("{", "Х").gsub("}", "Ъ").gsub("A", "Ф").gsub("S", "Ы").gsub("D", "В").gsub("F", "А").gsub("G", "П").gsub("H", "Р").gsub("J", "О").gsub("K", "Л").gsub("L", "Д").gsub("Z", "Я").gsub("X", "Ч").gsub("C", "С").gsub("V", "М").gsub("B", "И").gsub("N", "Т").gsub("M", "Ь").gsub("<", "Б").gsub(">", "Ю")
+    end
+  
+    def ci
+      gsub(/[ёЁ]/, '[ёЁ]').gsub(/[йЙ]/, '[йЙ]').gsub(/[цЦ]/, '[цЦ]').gsub(/[уУ]/, '[уУ]').gsub(/[кК]/, '[кК]').gsub(/[еЕ]/, '[еЕ]').gsub(/[нН]/, '[нН]').gsub(/[гГ]/, '[гГ]').gsub(/[шШ]/, '[шШ]').gsub(/[щЩ]/, '[щЩ]').gsub(/[зЗ]/, '[зЗ]').gsub(/[хХ]/, '[хХ]').gsub(/[ъЪ]/, '[ъЪ]').gsub(/[фФ]/, '[фФ]').gsub(/[ыЫ]/, '[ыЫ]').gsub(/[вВ]/, '[вВ]').gsub(/[аА]/, '[аА]').gsub(/[пП]/, '[пП]').gsub(/[рР]/, '[рР]').gsub(/[оО]/, '[оО]').gsub(/[лЛ]/, '[лЛ]').gsub(/[дД]/, '[дД]').gsub(/[жЖ]/, '[жЖ]').gsub(/[эЭ]/, '[эЭ]').gsub(/[яЯ]/, '[яЯ]').gsub(/[чЧ]/, '[чЧ]').gsub(/[сС]/, '[сС]').gsub(/[мМ]/, '[мМ]').gsub(/[иИ]/, '[иИ]').gsub(/[тТ]/, '[тТ]').gsub(/[ьЬ]/, '[ьЬ]').gsub(/[бБ]/, '[бБ]').gsub(/[юЮ]/, '[юЮ]')
     end
     
   end

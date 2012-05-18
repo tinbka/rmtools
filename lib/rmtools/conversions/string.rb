@@ -1,5 +1,5 @@
 # encoding: utf-8
-require 'cgi'
+#require 'cgi'
 
 class String
 
@@ -16,12 +16,6 @@ class String
       end
     }
     h
-  end
-  
-  # the opposite of #to_json
-  # active support activesupport
-  def from_json
-    ActiveSupport::JSON.decode self
   end
 
 end

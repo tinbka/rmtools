@@ -87,4 +87,8 @@ class Dir
     }
   end
   
+  def self.threadify(threads=4, &block)
+    RMTools::threadify(Dir['*'], threads, &block)
+  end
+  
 end

@@ -1,5 +1,5 @@
 # encoding: utf-8
-RMTools::require 'lang/helpers'
+RMTools::require 'lang/ansi'
 
 class String
   
@@ -25,10 +25,15 @@ class String
     str = b || "<html/>"
     doc = if forceutf
         XML::HTMLParser.string(str.xml_to_utf, :options => 97,
-                                        :encoding => XML::Encoding::UTF_8).parse
+                                                             :encoding => XML::Encoding::UTF_8).parse
       else
         begin
-          XML::HTMLParser.string(str, :options => 97).parse
+          if RUBY_VERSION > '1.9'
+            XML::HTMLParser.string(str, :options => 97, 
+                                                  :encoding => XML::Encoding.const_get(__ENCODING__.to_s.tr('-','_').to_sym)).parse
+          else
+            XML::HTMLParser.string(str, :options => 97).parse
+          end
         rescue
           if enc = xml_charset
             XML::HTMLParser.string(str, :options => 97, 

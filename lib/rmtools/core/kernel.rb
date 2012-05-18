@@ -4,6 +4,8 @@ module Kernel
   # re-require
   def require!(file)
     ['.rb', '.so', '.dll', ''].each {|ext| $".delete "#{file}#{ext}"}
+    file = File.expand_path file
+    ['.rb', '.so', '.dll', ''].each {|ext| $".delete "#{file}#{ext}"}
     require file
   end
 
@@ -23,12 +25,13 @@ module Kernel
   end
     
   def executing? file=$0
-    caller(0)[0] =~ /^#{file}:/
+    caller[0] =~ /^#{file}:/
   end
   
   def whose?(method, *opts)
-    opts = opts.get_opts [:flags], :ns => :public
-    checker = :"#{ns}_method_defined?"
+    opts = *opts.get_opts([:flags], :ns => :public)
+    opts[:modules] ||= opts[:mod]
+    checker = :"#{opts[:ns]}_method_defined?"
     if Array === method
       methods = method.to_syms
     else 

@@ -22,7 +22,7 @@ class StringScanner
   #         node.sum {|n| n.__find(str, nslist).to_a} : node.__find(str, nslist) 
   #     }
   def each(re, cbs=nil, &cb)
-    @last = 0
+    @last = pos
     res = scan_until re
     if cbs
       if cbs.is Hash
@@ -39,7 +39,7 @@ class StringScanner
         end
       else
         while res
-          if cb = cbs.find {|pair| pair[0] and matched[pair[0]]}
+          if cb = cbs.find {|pattern, fun| pattern and matched[pattern]}
             # patterns should be as explicit as possible
             cb[1][self, $~] if cb[1]
             @last = pos
@@ -61,10 +61,12 @@ class StringScanner
   end
   
   def head
-    string[@last...pos-matched_size]
+    string[@last...pos-matched_size.to_i]
   end
   
-  alias tail post_match
+  def tail 
+    post_match || string[pos..-1]
+  end
   
   def hl_next(re)
     (res = scan_until re) && Painter.hl(string[[pos-1000, 0].max..pos+1000], res)

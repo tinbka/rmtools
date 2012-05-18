@@ -1,6 +1,4 @@
 # encoding: utf-8
-require 'active_record'
-
 module ActiveRecord
 
   def self.establish_connection_with config
@@ -74,6 +72,73 @@ module ActiveRecord
         Hash[names.map {|name| [name.to_sym, nil]}].merge(hash)
       ])
       find_by_sql(["SELECT * FROM #{quoted_table_name} WHERE #{primary_key} = ?", id])[0]
+    end
+    
+    # values must be 2-tuple array [[column1, value1], [column2, value2], ...] and columns must be in order they've been created
+    def self.insert_unless_exist(table, values)
+      table = connection.quote_table_name table
+      if execute_sanitized(["SELECT COUNT(*) FROM #{table} WHERE #{vaues.firsts.map {|v| "#{connection.quote_column_name v}=?"}*' AND '} LIMIT 1", *values.lasts]).to_a.flatten > 0
+        false
+      else
+        execute_sanitized ["INSERT INTO #{table} VALUES (#{['?']*values.size*','})", *values.lasts]
+        true
+      end
+    end
+    
+    def resource_path
+      "#{self.class.name.tableize}/#{id}"
+    end
+    
+    def self.select_rand(limit, options={})
+      cnt = options.delete :cnt
+      discnt = options.delete :discnt
+      where = options.delete :where
+      cnt_where = options.delete :cnt_where
+      tables = options.delete :tables
+      cnt_tables = options.delete :cnt_tables
+      fields = options.delete :fields
+      
+      find_by_sql(["SELECT * FROM (
+          SELECT @cnt:=#{cnt ? cnt.to_i : 'COUNT(*)'}+1#{-discnt.to_i if discnt}, @lim:=#{limit.to_i}#{"FROM #{options[:cnt_tables] || table_name} WHERE #{cnt_where}" if !cnt}
+        ) vars
+        STRAIGHT_JOIN (
+          SELECT #{fields || table_name+'.*'}, @lim:=@lim-1 FROM #{tables || table_name} WHERE (@cnt:=@cnt-1) AND RAND() < @lim/@cnt#{" AND (#{where})" if where}
+        ) i", options])
+    end
+      
+    class_attribute :enums
+    def self.enum hash
+      key = hash.keys.first
+      (self.enums ||= {}).merge! hash
+      define_attribute_methods if !attribute_methods_generated?
+      class_eval %{
+      def #{key}
+        missing_attribute('#{key}', caller) unless @attributes.has_key?('#{key}')
+        self.class.enums[:#{key}][@attributes['#{key}']]
+      end
+      def #{key}=(val)
+       write_attribute('#{key}', Fixnum === val ? val : self.class.enums[:#{key}].index val.to_s
+      end
+     }
+    end
+   
+   # fix for thinking_sphinx equation in #instances_from_class:
+   # ids.collect {|obj_id| instances.detect do |obj| obj.primary_key_for_sphinx == obj_id end}
+   # where obj_id is Array
+    def primary_key_for_sphinx
+      [read_attribute(self.class.primary_key_for_sphinx)]
+    end
+    
+  end
+  
+  class Relation
+    
+    def any?
+      limit(1).count != 0
+    end
+    
+    def empty?
+      limit(1).count == 0
     end
     
   end

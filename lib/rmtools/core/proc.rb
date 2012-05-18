@@ -1,6 +1,8 @@
 # encoding: utf-8
 class Proc
   NULL = lambda {} unless defined? Proc::NULL
+  TRUE = lambda {true} unless defined? Proc::TRUE
+  FALSE = lambda {false} unless defined? Proc::FALSE
   attr_accessor :string
   
   def when

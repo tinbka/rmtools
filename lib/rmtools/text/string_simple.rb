@@ -72,10 +72,21 @@ class String
   
   #    "b ц ~ \255 秀".bytes
   ### => ["62", "20", "d1", "86", "20", "7e", "20", "ad", "20", "e7", "a7", "80"]
-  def bytes
-    arr = []
-    each_byte {|b| arr << b.hex}
-    arr
+  #def bytes
+  #  arr = []
+  #  each_byte {|b| arr << b.hex}
+  #  arr
+  #end
+  #
+  # this method defined in Enumerable and returns Enumerable::Enumerator that should be converted to array of integers, not hex-strings
+  if RUBY_VERSION < '1.9'
+    def symbols_count
+      unpack('U*').size
+    end
+  else
+    def symbols_count
+      size
+    end
   end
   
 end

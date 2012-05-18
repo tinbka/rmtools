@@ -11,7 +11,7 @@ class Regexp
     bs = klass = count = nil
     group_marks = []
     oppose = {'('=>')', ')'=>'(', '^'=>'$', '$'=>'^'}
-    borders = {'Z'=>'\A', 'A'=>'\Z'}
+    borders = {'Z'=>'\A', 'A'=>'\Z', 'z'=>'\a', 'a'=>'\z'}
     ext = options&2 != 0
     StringScanner(source).each(/./) {|s|
       if (m = s.matched) == '\\'

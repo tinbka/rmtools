@@ -9,7 +9,7 @@ class String
     def sharp_split(splitter, *args)
       count, opts = args.fetch_opts [0, :flags], :include_splitter => true
       if !opts[:report_headers] and opts[:include_splitter] and splitter.is Regexp
-        return split(/(?=#{splitter.source})/, count)
+        return split(/(?=#{splitter.source})/u, count)
       end
       a = split(splitter, count)
       return a if !opts[:include_splitter] and !opts[:report_headers]
@@ -59,7 +59,7 @@ class String
   private
     def split_by_syntax(str, maxlen, buflen=0)
       len, add = maxlen - buflen, nil
-      [/[^.?!]+\z/, /[^;]+\z/, /[^\n]+/, /\S+\z/, /[^。]+z/, /[^、]+z/].each {|t|
+      [/[^.?!…]+\z/, /[^;]+\z/, /[^,:]+\z/, /[^\n]+/, /\S+\z/, /[^。、]+z/].each {|t|
         if !(add = str[t]) or add.size <= len
           return add
         end
@@ -67,7 +67,7 @@ class String
       add
     end
     
-    def sanitize_blocks!(blocks, opts)
+    def sanitize_blocks!(blocks, maxlen, opts)
       blocks.reject! {|b| b.empty?} if opts[:no_blanks]
       blocks.strips! if opts[:strips]
       blocks.each {|b| raise Exception, "can't split string by #{terminator} to blocks with max length = #{maxlen}" if b.size > maxlen} if opts[:strict_overhead]
@@ -97,7 +97,7 @@ class String
           buf = buf_add + buf
         end
         if blocks.size == opts[:lines]
-          return sanitize_blocks! blocks, opts
+          return sanitize_blocks! blocks, maxlen, opts
         end
         blocks << ''
         if buf
@@ -111,18 +111,36 @@ class String
           buf = nil
         end
       end
-      sanitize_blocks! blocks, opts
+      sanitize_blocks! blocks, maxlen, opts
     end
     
     #   'An elegant way to factor duplication out of options passed to a series of method calls. Each method called in the block, with the block variable as the receiver, will have its options merged with the default options hash provided. '.cut_line 100
     # => "An elegant way to factor duplication out of options passed to a series of method calls..."
+  if RUBY_VERSION < '1.9'
     def cut_line(maxlen, *opts)
       terminator, opts = opts.fetch_opts [:syntax, :flags]
-      opts[:charsize] ||= RUBY_VERSION < '1.9' && a[0].cyr? ? 2 : 1
+      opts[:charsize] ||= cyr? ? 2 : 1
       return self if size <= maxlen
-      maxlen -= 3
-      split_to_blocks(maxlen*opts[:charsize], terminator, :strips => true, :strict_overhead => false, :lines => 1)[0][0, maxlen].chomp('.') + '...'
+      blocks = split_to_blocks(maxlen*opts[:charsize]-3, terminator, :strips => true, :strict_overhead => false, :lines => 1)
+      cuted = (blocks[0] || self)[0, maxlen]
+      if terminator == :syntax
+        cuted.gsub!(/[.!?,;]$/, '')
+      else cuted.chomp!('.')
+      end
+      cuted + '…'
     end
+  else
+    def cut_line(maxlen, terminator=:syntax)
+      return self if size <= maxlen
+      blocks = split_to_blocks(maxlen-1, terminator, :strips => true, :strict_overhead => false, :lines => 1)
+      cuted = (blocks[0] || self)[0, maxlen]
+      if terminator == :syntax
+        cuted.gsub!(/[.!?,;]$/, '')
+      else cuted.chomp!('.')
+      end
+      cuted + '…'
+    end
+  end
     
     #   puts 'An elegant way to factor duplication out of options passed to a series of method calls. Each method called in the block, with the block variable as the receiver, will have its options merged with the default options hash provided.  '.split_to_lines 50
     #    produces:
@@ -134,12 +152,19 @@ class String
     #
     # This method is use cyrillic lib only to detect char byte-length
     # options: charsize, no_blanks, strips
+  if RUBY_VERSION < '1.9'
     def split_to_lines(maxlen, *opts)
       raise Exception, "Can't break text with maxlen = #{maxlen}" if maxlen < 1
-      opts = opts.fetch_opts :flags, :strips=>true
-      a = split("\n")
-      opts[:charsize] ||= RUBY_VERSION < '1.9' && a[0].cyr? ? 2 : 1
-      a.map {|string| string.strip.split_to_blocks(maxlen*opts[:charsize], opts.merge(:strict_overhead => false))}.flatten*"\n"
+      opts = opts.fetch_opts([:flags], :strips => true).merge(:strict_overhead => false)
+      opts[:charsize] ||= a[0].cyr? ? 2 : 1
+      split("\n").map {|string| string.strip.split_to_blocks(maxlen*opts[:charsize], opts)}.flatten*"\n"
     end
+  else
+    def split_to_lines(maxlen, *opts)
+      raise Exception, "Can't break text with maxlen = #{maxlen}" if maxlen < 1
+      opts = opts.fetch_opts([:flags], :strips => true).merge(:strict_overhead => false)
+      split("\n").map {|string| string.strip.split_to_blocks(maxlen, opts)}.flatten*"\n"
+    end
+  end
   
 end

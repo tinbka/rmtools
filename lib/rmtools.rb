@@ -1,2 +1,2 @@
-require 'rmtools/load'
+require 'rmtools/init'
 RMTools::require 'dev_min'

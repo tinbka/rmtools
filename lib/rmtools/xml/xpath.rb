@@ -11,6 +11,8 @@ module LibXML
           raise XML::Error, "can't process '#{$1}' operator"
         end
         x = xpath.dup
+        x.gsub! %r{([^\\])\s*>\s*}, '\1/'
+        x.gsub! %r{([^\\])\s+}, '\1//'
         x.gsub! %r{\.([\w-]+)([\[\{/]|\Z)}, '[@class="\1"]\2'
         x.gsub! %r{#([\w-]+)([\[\{/]|\Z)}, '[@id="\1"]\2'
         x.gsub! %r{(^|/)([^.#\w*/'"])}, '\1*\2'

@@ -15,11 +15,22 @@ class Hash
     str = method.to_s
     if str =~ /=$/
       self[str[0..-2]] = args[0]
+    elsif !args.empty? or str =~ /[!?]$/
+      throw_no method 
     else
-      throw_no method if !args.empty? or str =~ /[!?]$/
       a = self[str]
       (a == default) ? self[method] : a
     end
+  end
+  
+  # Redefine since these methods are deprecated anyway
+  def type
+    a = self['type']
+    (a == default) ? self[:type] : a
+  end
+  def id
+    a = self['id']
+    (a == default) ? self[:id] : a
   end
 
 end

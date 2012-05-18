@@ -20,15 +20,17 @@ using namespace std;
 static VALUE object_define_new_value(VALUE self, VALUE new_obj)
 {
     if (FIXNUM_P(self) || self == Qnil || self == Qfalse || self == Qtrue || self == Qundef) {
-        const char* msg = STR2CSTR(rb_mod_name(rb_obj_class(self)));
+        VALUE tmp = rb_mod_name(rb_obj_class(self));
+        const char* msg = StringValuePtr(tmp);
         rb_raise(rb_eTypeError, "can't redefine %s", msg);
     }
     if (FIXNUM_P(new_obj) || new_obj == Qnil || new_obj == Qfalse || new_obj == Qtrue  || new_obj == Qundef) {
-        const char* msg = STR2CSTR(rb_mod_name(rb_obj_class(new_obj)));
+        VALUE tmp = rb_mod_name(rb_obj_class(self));
+        const char* msg = StringValuePtr(tmp);
         rb_raise(rb_eTypeError, "can't define object as %s", msg);
     }
     // Place the definition of the new object in the slot of self
-    memcpy(reinterpret_cast<void*>(self), reinterpret_cast<void*>(new_obj), SLOT_SIZE);
+    memcpy(reinterpret_cast<void*>(self), reinterpret_cast<void*>(rb_funcall(new_obj, rb_intern("clone"), 0)), SLOT_SIZE);
     return self;
 }
 
@@ -232,23 +234,23 @@ static VALUE rb_ary_uniq_by(VALUE ary)
 /*
  *   Make hash with unique items of +self+ or (when block given)
  *   unique results of items yield for keys and 
- *   count of them in +self, 
+ *   count of them in +self+, 
  *   or (with option :fill) arrays of yield results, 
  *   or (with option :indexes) arrays of indexes of them,
  *   or (with option :group) arrays of themselves for values
  *   
- *   [1, 2, 2, 2, 3, 3].count
+ *   [1, 2, 2, 2, 3, 3].arrange
  *   => {1=>1, 2=>3, 3=>2}
- *   [1, 2, 2, 2, 3, 3].count {|i| i%2}
+ *   [1, 2, 2, 2, 3, 3].arrange {|i| i%2}
  *   => {0=>3, 1=>3}
- *   [1, 2, 2, 2, 3, 3].count :fill
+ *   [1, 2, 2, 2, 3, 3].arrange :fill
  *   => {1=>[1], 2=>[2, 2, 2], 3=>[3, 3]}
- *   [1, 2, 2, 2, 3, 3].count :indexes
+ *   [1, 2, 2, 2, 3, 3].arrange :indexes
  *   => {1=>[0], 2=>[1, 2, 3], 3=>[4, 5]}
- *   [1, 2, 2, 2, 3, 3].count(:indexes) {|i| i%2}
+ *   [1, 2, 2, 2, 3, 3].arrange(:indexes) {|i| i%2}
  *   => {0=>[1, 2, 3], 1=>[0, 4, 5]}
  *   :group is analogue to rails' group_by but twice faster
- *   [1, 2, 2, 2, 3, 3].count(:group) {|i| i%2}
+ *   [1, 2, 2, 2, 3, 3].arrange(:group) {|i| i%2}
  *   => {0=>[2, 2, 2], 1=>[1, 3, 3]}
  */
 static VALUE rb_ary_count_items(int argc, VALUE *argv, VALUE ary)
@@ -537,7 +539,7 @@ extern "C" void Init_rmtools()
     rb_define_method(rb_cArray, "uniq_by", RUBY_METHOD_FUNC(rb_ary_uniq_by), 0);
     rb_define_method(rb_cArray, "uniq_by!", RUBY_METHOD_FUNC(rb_ary_uniq_by_bang), 0);
   
-    rb_define_method(rb_cArray, "count", RUBY_METHOD_FUNC(rb_ary_count_items), -1);
+    rb_define_method(rb_cArray, "arrange", RUBY_METHOD_FUNC(rb_ary_count_items), -1);
 
     rb_define_method(rb_cArray, "partition", RUBY_METHOD_FUNC(rb_ary_partition), 0);
     

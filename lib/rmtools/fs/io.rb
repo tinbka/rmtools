@@ -43,13 +43,39 @@ module RMTools
       value.size
     end
   
-    def read(df)
-      df = df.tr '\\', '/'
-      if File.file?(df)
-        File.open(df, File::RDONLY) {|f| f.read}
-      else
-        warn "couldn't read from #{df.inspect}; file missed"
-      end
+    #    read('filename')
+    ### => 'text from filename'
+    #    read('nonexistent_filename')
+    # couldn't read from "nonexistent_filename" (called from (irb):9001)
+    ### => nil
+    #    read(['file1', 'file2', 'file3'])
+    ### => 'text from first of file1, file2, file3 that exists'
+    #    read(['file1', 'file2'], ['nonexistent_file1', 'nonexistent_file2'])
+    # coludn't read from neither "nonexistent_file1", nor "nonexistent_file2" (called from (irb):9003)
+    ### => ['text from first of file1, file2 that exists', nil]
+    #    read('file1', 'file2')
+    ### => ['text from file1', 'text from file2]
+    #    read('file1', ['file2', 'file3'])
+    ### => ['text from file1', 'text from first of file2 and file3 that exists']
+    def read(*dests)
+      texts = dests.map {|dest|
+        dest = dest[0] if dest.size == 1
+        if dest.is Array
+          if file = dest.find {|f| File.file?(f.tr '\\', '/')}
+            File.open(file.tr('\\', '/'), File::RDONLY) {|f| f.read}
+          else
+            warn "couldn't read from neither #{dest[0].inspect} nor #{dest[1..-1].inspects*' nor '}; files missed (called from #{caller[2]})"
+          end
+        else
+          if File.file? dest.tr('\\', '/')
+            File.open(dest.tr('\\', '/'), File::RDONLY) {|f| f.read}
+          else
+            warn "couldn't read from #{dest.inspect}; file missed (called from #{caller[2]})"
+          end
+        end
+      }
+      texts = texts[0] if texts.size == 1
+      texts
     end
   
   module_function :read, :write, :rw

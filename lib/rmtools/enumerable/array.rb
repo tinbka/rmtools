@@ -3,6 +3,64 @@ require 'active_support/core_ext/array'
 RMTools::require 'functional/fold'
 
 class Array
+  # builtin methods overwrite
+  # why should we do zillions of cycles just for ensure A | [] = A - [] = A or A & [] = []
+  # though - and & should be improved within C-extension to break loop when no items have lost in self
+  alias union |
+  alias coallition +
+  alias subtraction -
+  alias intersection &
+  private :union, :coallition, :subtraction, :intersection
+  
+  def |(ary) 
+    if empty?
+      ary.uniq
+    elsif ary.respond_to? :empty? and ary.empty?
+      dup
+    else union(ary) 
+    end
+  end
+  
+  def +(ary) 
+    if empty?
+      if ary.respond_to? :empty? and ary.empty?
+        []
+      else ary.dup 
+      end
+    elsif ary.respond_to? :empty? and ary.empty?
+      dup
+    else coallition(ary) 
+    end
+  end
+  
+  def -(ary) 
+    if empty?
+      []
+    elsif ary.respond_to? :empty? and ary.empty?
+      dup
+    else subtraction(ary) 
+    end
+  end
+  
+  def &(ary) 
+    if empty? or (ary.respond_to? :empty? and ary.empty?)
+      [] 
+    else intersection(ary) 
+    end
+  end
+  
+  def ^(ary)
+    if empty? or (ary.respond_to? :empty? and ary.empty?)
+      [dup, ary.dup]
+    elsif self == ary
+      [[], []]
+    else
+      common = intersection ary
+      [self - common, ary - common]
+    end
+  end
+  
+  alias diff ^
 
   # arithmetics
   def avg
@@ -89,6 +147,18 @@ class Array
     !find {|e| !yield(e)}
   end
   
+  def no?
+    !find {|e| yield(e)}
+  end
+  
+  def find_by(key, value)
+    find {|e| e.__send__(key) == value}
+  end
+  
+  def select_by(key, value)
+    select {|e| e.__send__(key) == value}
+  end
+  
   # concatenation  
   # analogue to String#>>
   def >>(ary)
@@ -131,7 +201,7 @@ class Array
   def sum(identity=0, &b) foldl(:+, &b) || identity end
   
   # fastering activesupport's method
-  def group_by(&b) count(:group, &b) end
+  def group_by(&b) arrange(:group, &b) end
   
   
   

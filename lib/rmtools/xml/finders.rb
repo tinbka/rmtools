@@ -5,18 +5,27 @@ module LibXML::XML
   DefaultNS = {}
 
   FindByIndex = lambda {|node, ns, ss|
-    node = node.is(Array) ?
-      node.sum {|n| n.__find(nil, ns, ss)[ss.matched[1..-2].to_i].to_a} : 
-                      node.__find(nil, ns, ss)[ss.matched[1..-2].to_i]
-    node.is(Array) && node.size == 1 ? node[0] : node
+    index = ss.matched[1..-2]
+    if index.index('.')
+      range = Range(*index.split('..').to_is)
+      node = node.is(Array) ?
+        node.sum([]) {|n| n.__find(nil, ns, ss).to_a[range]} : 
+                        node.__find(nil, ns, ss).to_a[range]
+    else
+      node = node.is(Array) ?
+        node.map {|n| n.__find(nil, ns, ss)[index.to_i]}.compact : 
+                        node.__find(nil, ns, ss)[index.to_i]
+    end
+    node.is(Array) && node.size < 2 ? node[0] : node
   }
+  
   FindByProc = lambda {|node, ns, ss|
     str_to_eval = ss.matched[1..-2]
-    '_' >> str_to_eval if !str_to_eval['_']
+    block = eval "lambda {|_| #{'_' if !str_to_eval['_']}#{str_to_eval}}"
     node = node.is(Array) ?
-      node.sum {|n| n.__find(nil, ns, ss).select{|_| eval str_to_eval}.to_a} : 
-                      node.__find(nil, ns, ss).select{|_| eval str_to_eval}
-    node.is(Array) && node.size == 1 ? node[0] : node
+      node.sum([]) {|n| n.__find(nil, ns, ss).select(&block).to_a} : 
+                      node.__find(nil, ns, ss).select(&block)
+    node.is(Array) && node.size < 2 ? node[0] : node
   }
     
   class Node
@@ -31,7 +40,7 @@ module LibXML::XML
     def find(xpath, nslist=DefaultNS)
       node = self
       ss = StringScanner.new xpath
-      ss.each %r{\[-?\d+\]|\{[^\}]+\}}, 
+      ss.each %r{\[-?\d+(\.\.\d+)?\]|\{[^\}]+\}}, 
         ?[ => lambda {|ss| 
           if node; node = FindByIndex[node, nslist, ss]
           else     return []     end  }, 
@@ -40,7 +49,7 @@ module LibXML::XML
           else     return []     end  },
         nil => lambda {|str|
           node = node.is(Array) ?
-            node.sum {|n| n.__find(str, nslist).to_a} : node.__find(str, nslist) 
+            node.sum([]) {|n| n.__find(str, nslist).to_a} : node.__find(str, nslist) 
         }
       node ? (!ss.eos? || node.is(Array)) ? node : [node] :  []
     end
@@ -64,7 +73,7 @@ module LibXML::XML
       xpath.sub!(/^([\w*])/, '//\1')
       node = self
       ss = StringScanner.new xpath
-      ss.each %r{\[-?\d+\]|\{[^\}]+\}}, 
+      ss.each %r{\[-?\d+(\.\.\d+)?\]|\{[^\}]+\}}, 
         ?[ => lambda {|ss|
           if node; node = FindByIndex[node, nslist, ss]
           else     return []     end  }, 
@@ -73,7 +82,7 @@ module LibXML::XML
           else     return []     end  },
         nil => lambda {|str|
           node = node.is(Array) ?
-            node.sum {|n| n.__find(str, nslist).to_a} : node.__find(str, nslist) 
+            node.sum([]) {|n| n.__find(str, nslist).to_a} : node.__find(str, nslist) 
         }
       node ? (!ss.eos? || node.is(Array)) ? node : [node] :  []
     end

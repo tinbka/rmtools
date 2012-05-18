@@ -26,7 +26,7 @@ class Array
     opts = {:max_cols => Inf, :padding => 0}.merge opts
     return inspect unless cols = ENV['COLUMNS']
     cols = cols.to_i
-    cell_size = map {|e| e.inspect.size}.max + opts[:padding]*2
+    cell_size = map {|e| e.inspect.csize}.max + opts[:padding]*2
     if n = [(1..cols/2).max {|i| i*(cell_size+1) < cols}, opts[:max_cols]].min
       table = div(n)
       border = '+'+('-'*cell_size+'+')*n
@@ -36,7 +36,7 @@ class Array
         border : 
         '+'+('-'*cell_size+'+')*table.last.size + '-'*((cell_size+1)*(n-table.last.size)-1) + '+'
       table.map {|rows| 
-        str = '|'+rows.map {|cell| cell.inspect.center(cell_size)}*'|'+'|'
+        str = '|'+rows.map {|cell| cell.inspect.ccenter(cell_size)}*'|'+'|'
         str << ' '*((cell_size+1)*(n-rows.size)-1)+'|' if rows.size < n
         border + str + ("\n" if need_lb)
       }.join + last_border

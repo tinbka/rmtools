@@ -3,7 +3,10 @@ RMTools::require 'lang/cyrillic'
 
 class Regexp
   
-  def cyr_ic() Regexp.new(source.cyr_ic, options) end
-  alias :ci :cyr_ic
+  if RUBY_VERSION > '1.9'
+    def ci; self end
+  else
+    def ci; Regexp.new(source.cyr_ic, options) end
+  end
 
 end

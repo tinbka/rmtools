@@ -46,6 +46,27 @@ class Object
   
   def in(*container)
     container.size == 1 ? container[0].include?(self) : container.include?(self)
+  end  
+  
+  def deep_clone
+    _deep_clone({})
+  end
+
+protected
+  def _deep_clone(cloning_map)
+    return cloning_map[self] if cloning_map.key? self
+    cloning_obj = clone
+    cloning_map[self] = cloning_obj
+    cloning_obj.instance_variables.each do |var|
+      val = cloning_obj.instance_variable_get(var)
+      begin
+        val = val._deep_clone(cloning_map)
+      rescue TypeError
+        next
+      end
+      cloning_obj.instance_variable_set(var, val)
+    end
+    cloning_obj
   end
   
 end

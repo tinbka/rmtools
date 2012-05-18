@@ -1,5 +1,5 @@
-Copyright (c) 2010-2011
-    Shinku <tinbka@gmail.com>
+Copyright (c) 2010-2012
+    Baev Sergey <tinbka@gmail.com>
 
 This work is licensed under the same license as Ruby language.
 
@@ -8,13 +8,30 @@ Methods for basic classes addon collection.
 
 == CHANGES
 
+== Version 1.2.7
+
+* String#hl and #ghl: console-highlight pattern in string
+* True#call and False#call in order to pass boolean values as callable argument
+* ActiveRecord::Relation#any? and #empty?, ActiveRecord::Base.insert_unless_exist (using execute) and .select_rand 
+* Added couple of handlers into Array#method_missing
+* File.modify now can process files by glob-patterns and correctly use multiple gsub! inside passed block
+* RMTools.read now can read from list of files in order
+* Upped RMTools.timer accuracy
+* Optimized Array#-, #+, #& and #| for when one of arrays is empty; added Array#diff
+* Optimized Object#to_json and String#from_json: use JSON stdlib for ruby 1.9. Object#to_json_safe: timeout'ed conversion
+* String#cut_line and #split_to_lines optimized for use in Ruby 1.9
+* Removed String#bytes because it duplicate ruby 1.9 method
+* static VALUE rb_ary_count_items moved from Array#count to Array#arrange
+* Fixed Module#self_name
+* RMTools::CodeReader is still unstable though
+
 == Version 1.2.0
 
 * Renamed debug/ to dev/, slightly restructured lib/rmtools/ and require handlers: requrie 'rmtools' for common applications and 'rmtools_dev' for irb and maybe dev environment
 * Slightly extended StringScanner
 * Proof of concept: Regexp reverse (wonder if someone did it earlier in Ruby)
 * Kernel#whose? to find classes and/or modules knowing some method
-* Method code lookup over all loaded libs (it can't handle evals yet), see dev/code_lookup.rb
+* Method code lookup over all loaded libs (it can't handle evals yet), see dev/code_reading.rb
 * Coloring is now made by singleton `Painter' and have option for transparent coloring
 
 === Version 1.1.14

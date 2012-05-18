@@ -41,9 +41,10 @@ class Class
   
   # differs with #ancestors in that it doesn't show included modules
   def superclasses
-    unfold(lambda {|c|!c}) {|c| [c.superclass, c]} 
+    superclass ? superclass.unfold(lambda {|c|!c}) {|c| [c.superclass, c]} : []
   end
   
 end
 
-[Hash, Regexp, File, Dir].each {|klass| klass.__init__}
+require 'set'
+[Hash, Array, Set, Regexp, File, Dir, Range, Class, Module].each {|klass| klass.__init__}

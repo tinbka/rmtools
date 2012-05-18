@@ -19,8 +19,8 @@ module RMTools
       CYAN = 36
       GRAY = 37
             
-      Colors = {:black => 30, :red => 31, :green => 32, :yellow => 33, :blue => 34, :purple => 35, :cyan => 36, :gray => 37,
-                    :k => 30, :r => 31, :g => 32, :y => 33, :b => 34, :p => 35, :c => 36
+      Colors = {:black => 30, :red => 31, :green => 32, :yellow => 33, :blue => 34, :purple => 35, :cyan => 36, :gray => 37, :pink => [35, 1],
+                    :k => 30, :r => 31, :g => 32, :y => 33, :b => 34, :p => 35, :c => 36, :w => [37, 1]
                   }.unify_keys
       Effects = {:bold => 1, :underline => 4, :graybg => 5, :boldbg => 7,
                       :b => 1, :u => 4, :gbg => 5, :bbg => 7
@@ -37,7 +37,11 @@ module RMTools
         return str if ENV['ComSpec'] =~ /cmd(.exe)?$/
         if num.is String
           num = Colors[num]
-          effect = Effects[num] if !num
+          if !num
+            effect = Effects[num]
+          elsif num.is Array
+            num, effect = num 
+          end
         end
         effect = Effects[effect] if effect.is String
         if num and effect
@@ -72,6 +76,7 @@ module RMTools
       ['sub', 'gsub', 'sub!', 'gsub!'].each {|m| 
         class_eval %{
       def #{m.sub'sub','hl'} str, pattern, color=:red_bold
+        pattern = pattern.to_s unless pattern.is Regexp
         str.#{m} pattern do |word|
           if str[/^\\e\\[(\\d+(;\\d+)?)/]
             "\\e[m\#{send(color, word)}\\e[\#$1m"
@@ -79,6 +84,12 @@ module RMTools
             send(color, word)
           end
         end
+      end
+      }
+        String.class_eval %{
+      def #{m.sub'sub','hl'} pattern, color=:red_bold
+        Painter.#{m.sub'sub','hl'} self, pattern, color
+        self
       end
       }
       }

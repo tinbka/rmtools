@@ -12,7 +12,7 @@ class Array
     if Hash === defaults
       opts, defaults = defaults, []
       return_hash = true
-      $log.warn "fetch_opts(<hash>) now changed, if you want to jsut fetch hash options, use `opts = <hash>.merge(opts||{})' construction"
+      $log.warn "fetch_opts(<hash>) now changed, if you want to jsut fetch hash options, use `opts = <hash>.merge(opts||{})' construction", :caller => 2
     else
       return_hash = false
     end

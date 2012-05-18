@@ -2,7 +2,7 @@
 RMTools::require 'dev/trace_format'
 require 'active_support/core_ext/class/attribute'
 
-# 1.9 may hung up processing IO while generating traceback
+# as for rmtools-1.1.0, 1.9 may hung up processing IO while generating traceback
 if RUBY_VERSION < '1.9'
   class Exception
     alias :set_bt :set_backtrace
@@ -20,6 +20,7 @@ if RUBY_VERSION < '1.9'
     # it will be possible to get the lines entered in IRB
     # else it reads only ordinal require'd files
     def set_backtrace src
+      #message.hl! self.class
       if format = self.class.__trace_format
         src = RMTools.__send__ format, src
       end

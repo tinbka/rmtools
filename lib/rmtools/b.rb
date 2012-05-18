@@ -14,6 +14,9 @@ end
 class Proc
   def b; (self != NULL) && self end
 end
+class NilClass
+  def b; false end
+end
 module Enumerable
   def b; !empty? && self end
 end

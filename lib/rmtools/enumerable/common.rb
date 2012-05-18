@@ -45,4 +45,8 @@ module Enumerable
     to_a + array.to_a
   end
 
+  def threadify(threads=4, &block)
+    RMTools::threadify(self, threads, &block)
+  end
+
 end

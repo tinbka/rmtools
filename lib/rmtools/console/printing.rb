@@ -54,4 +54,5 @@ module RMTools
     print %W{|\b /\b -\b \\\b +\b X\b}.rand
   end
     
+  module_function :tick!
 end

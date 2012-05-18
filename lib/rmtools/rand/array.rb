@@ -17,6 +17,23 @@ class Array
     RMTools.randarr(len)
   end
   
+  def rand
+    if block_given?
+      h, ua = {}, uniq
+      s = ua.size
+      loop {
+        i = Kernel.rand size
+        if h[i]
+          return if h.size == s
+        elsif yield(e = ua[i])
+          return e
+        else h[i] = true
+        end
+      }
+    else self[Kernel.rand(size)]
+    end
+  end
+  
   def rand!
     delete_at Kernel.rand size
   end

@@ -4,7 +4,7 @@ module Enumerable
   def rand
     if block_given?
       h, ua = {}, to_a.uniq
-      size = ua.size
+      s = ua.size
       loop {
         i = Kernel.rand size
         if h[i]
@@ -20,7 +20,7 @@ module Enumerable
   
   def randsample(qty=Kernel.rand(size))
     a, b = [], to_a.dup
-    qty.times {a << b.rand!}
+    [qty, size].min.times {a << b.rand!}
     a
   end
 
