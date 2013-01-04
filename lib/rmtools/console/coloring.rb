@@ -31,6 +31,16 @@ module RMTools
       method_defined? :b and undef_method :b
       method_defined? :p and undef_method :p  
       
+      def demo(str, pattern=nil)
+        %w[black red green yellow blue purple cyan gray].xprod(%w[bold underline graybg boldbg]).each {|color, effect|
+          if pattern
+            puts ghl(str, pattern, "#{color}_#{effect}")
+          else
+            puts paint(str, transparent, color, effect)
+          end
+        }
+      end
+      
       def paint(str, transparent, num=nil, effect=nil)
         # default cmd.exe cannot into ANSI
         str = str.to_s
@@ -40,7 +50,7 @@ module RMTools
           if !num
             effect = Effects[num]
           elsif num.is Array
-            num, effect = num 
+            num, effect = num
           end
         end
         effect = Effects[effect] if effect.is String
@@ -57,6 +67,7 @@ module RMTools
         end 
       end
       
+      # Without +transparent+ Painter stops coloring once it find colored substring
       #     puts "words have one #{Painter.red_bold 'highlighted'} among them"
       # <default>words have one <red>highlighted</red> among them</default>
       #     puts Painter.gray "words have one #{Painter.red_bold 'highlighted'} among them"
@@ -89,7 +100,7 @@ module RMTools
         String.class_eval %{
       def #{m.sub'sub','hl'} pattern, color=:red_bold
         Painter.#{m.sub'sub','hl'} self, pattern, color
-        self
+        #{'self' if '!'.in m}
       end
       }
       }

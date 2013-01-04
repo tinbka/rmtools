@@ -7,6 +7,6 @@ module LibXML::XML
   Error.reset_handler
   
   class XPath::Object
-    include Enumerable            
+    include Enumerable
   end
 end

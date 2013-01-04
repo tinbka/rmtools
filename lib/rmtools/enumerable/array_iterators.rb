@@ -14,7 +14,8 @@ unless defined? RMTools::Iterators
   # => [[1, 2, 3], [3, 4, 6]]
   class Array
     alias :throw_no :method_missing
-    RMTools::Iterators = %r{^(#{(instance_methods.grep(/_by$/)+%w{every no select reject partition find_all find sum foldr find_by select_by})*'|'})_([\w\d\_]+[!?]?)}
+    alias :arrange_by :arrange
+    RMTools::Iterators = %r{^(#{(my_methods(/_by$/)+%w{every no select reject partition find_all find sum foldr})*'|'})_([\w\d\_]+[!?]?)}
     
     def method_missing(method, *args, &block)
       if match = (meth = method.to_s).match(RMTools::Iterators)
@@ -26,7 +27,7 @@ unless defined? RMTools::Iterators
           end
           return case iterator
             when :sum;     sum(args.shift) {|i| i.__send__ meth, *args, &block}
-            when :find_by; find_by(meth, *args)
+            when :find_by, :select_by, :reject_by; __send__(iterator, meth, *args)
             else __send__(iterator) {|i| i.__send__ meth, *args, &block}
             end
         rescue NoMethodError => e

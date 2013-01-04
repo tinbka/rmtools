@@ -1,12 +1,38 @@
-Copyright (c) 2010-2012
+Copyright (c) 2010-2013
     Baev Sergey <tinbka@gmail.com>
 
 This work is licensed under the same license as Ruby language.
 
 == RMTools
+https://github.com/tinbka/rmtools
 Methods for basic classes addon collection.
 
 == CHANGES
+
+== Version 1.2.12
+
+* Smartified Array bicycles: #index_where, #indices_where, #set_where, #set_all_where, #del_where, #del_all_where
+* Added #arrange_by to Array enumerators
+* Updated detecting of xml charset encoding for ruby 1.9
+* Fixed bug with empty trace formatting and Array#get_args with non-equalable argument
+
+== Version 1.2.11
+
+* Added Array#select_by and #reject_by pattern-iterators
+* Fixed ActiveRecord::Base.select_rand
+* Restricted RMTools.format_trace to use with Rails because of hard slowdown
+* Updated Proc constants for ruby 1.9
+
+== Version 1.2.10
+
+* Update String#parse:caller to parse ruby 1.9 "block level". Now block level processes in RMLogger and RMTools.format_trace
+* lib/dev/traceback.rb now applies to ruby > 1.9 as well
+* Support of Yajl or (if not installed) JSON for #to_json and #from_json. Overwrites ActiveSupport's ::encode and ::decode since they're so damn slow.
+
+== Version 1.2.8
+
+* StringScanner#each changed to compare `cbs' keys with @matched by number in ruby 1.8 and by first character in ruby 1.9, since ?x in 1.9 returns string instead of a charcode
+* Updated LibXML::XML::XPath to search elements with multiple classes
 
 == Version 1.2.7
 

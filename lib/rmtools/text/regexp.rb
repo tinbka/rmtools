@@ -37,7 +37,7 @@ class Regexp
           next
         elsif ext and m == '#'
           s.scan_until(/\n\s*/)
-        else case m.ord
+        else case m[0]
           when ?[;      klass = ''
           when ?];      new << "[#{klass}]"; klass = nil
           when ?{;      klass ? klass << m : count = ''

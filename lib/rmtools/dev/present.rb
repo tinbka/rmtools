@@ -14,7 +14,7 @@ class Array
     res = "[ "
     indent = (size-1).to_s.size
     res << map_with_index {|k,i|
-      "#{i.to_s.rjust(indent)}: #{(k.is String and !inspect_string) ? k : k.inspect}"
+      "#{RMTools::Painter.w(i.to_s.rjust(indent))}: #{(k.is String and !inspect_string) ? k : k.inspect}"
     }*"\n  "
     res << "]"
     puts res
@@ -52,7 +52,7 @@ class Hash
     str = "{ "
     sorted = sort rescue to_a.sort_by_to_s
     str << sorted.map {|k,v|
-      "#{(k.is String and !inspect_string) ? k : k.inspect} => #{(v.is String and !inspect_string) ? v : v.inspect},"
+      "#{RMTools::Painter.w((k.is String and !inspect_string) ? k : k.inspect)} => #{(v.is String and !inspect_string) ? v : v.inspect},"
     }*"\n  "
     str << "}"
     puts str

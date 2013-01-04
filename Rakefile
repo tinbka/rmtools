@@ -1,12 +1,12 @@
 require 'rake'
-require 'lib/rmtools/install'
+require './lib/rmtools/install'
 compile_manifest
 
-RMTOOLS_VERSION = '1.2.7'
+RMTOOLS_VERSION = '1.2.12'
 begin
     require 'hoe'
     config = Hoe.spec 'rmtools' do
-        developer("Shinku", "tinbka@gmail.com")
+        developer("Sergey Baev", "tinbka@gmail.com")
 
         self.summary = 'Yet another Ruby applied lib'
         self.description = 'Applied library primarily for debug and text/arrays/files processing purposes.'

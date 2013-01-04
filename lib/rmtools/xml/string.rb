@@ -2,23 +2,59 @@
 RMTools::require 'lang/ansi'
 
 class String
+  XML_CHARSET_RE = /(?:encoding|charset)=(.+?)"/
   
-  def xml_charset
-    charset = (charset = self[0,2000].match(/(?:encoding|charset)=(.+?)"/)) ? 
-      charset[1].upcase : 'UTF8'
-    if charset and charset != 'UTF-8'
-      utf!(charset) rescue(charset = nil) 
+  if RUBY_VERSION < '1.9'
+    
+    def xml_charset
+      charset = (charset = self[0,2000].match(XML_CHARSET_RE)) ? 
+        charset[1].upcase : 'UTF8'
+      if charset and charset != 'UTF-8'
+        utf!(charset) rescue(charset = nil) 
+      end
+      charset
     end
-    charset
-  end
-  
-  def xml_to_utf
-    charset = (charset = self[0,2000].match(/(?:encoding|charset)=(.+?)"/)) ? 
-      charset[1].upcase : 'UTF8'
-    if charset and charset != 'UTF-8'
-      utf!(charset) rescue() 
+    
+    def xml_to_utf
+      charset = (charset = self[0,2000].match(XML_CHARSET_RE)) ? 
+        charset[1].upcase : 'UTF8'
+      if charset and charset != 'UTF-8'
+        utf!(charset) rescue() 
+      end
+      self
     end
-    self
+    
+  else
+    
+    def xml_charset
+      ss = StringScanner(self)
+      if ss.scan_until(XML_CHARSET_RE)
+        charset = ss.matched.match(XML_CHARSET_RE)[1]
+        if charset != 'UTF-8'
+          utf!(charset) rescue(charset = nil)
+          charset
+        end
+      end
+    end
+    
+    def xml_to_utf
+      if encoding.name == 'UTF-8'
+        self
+      elsif xcs = xml_charset
+        if xcs != 'UTF-8'
+          begin
+            utf! xcs
+          rescue
+            force_encoding 'UTF-8'
+          end
+        else
+          self
+        end
+      else
+        force_encoding 'UTF-8'
+      end
+    end
+    
   end
   
   def to_doc(forceutf=nil)

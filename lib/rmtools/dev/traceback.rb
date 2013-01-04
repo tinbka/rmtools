@@ -2,8 +2,11 @@
 RMTools::require 'dev/trace_format'
 require 'active_support/core_ext/class/attribute'
 
-# as for rmtools-1.1.0, 1.9 may hung up processing IO while generating traceback
-if RUBY_VERSION < '1.9'
+# As for rmtools-1.1.0, 1.9.1 may hung up processing IO while generating traceback
+# As for 1.2.10 with 1.9.3 with readline support it isn't hung up anymore
+# Still it's not suitable for Rails, too many raises inside the engine slow all the wor in 5-10 times.
+# I need a way to format backtrace only in case it is actually about to be printed onto log or console/
+unless ENV['RAILS_ENV']
   class Exception
     alias :set_bt :set_backtrace
     class_attribute :__trace_format

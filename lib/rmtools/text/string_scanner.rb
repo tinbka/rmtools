@@ -27,7 +27,7 @@ class StringScanner
     if cbs
       if cbs.is Hash
         while res
-          if cb = cbs[matched.ord] || cbs[:~]
+          if cb = cbs[matched[0]] || cbs[:~]
             cb[self]
             @last = pos
             res = !eos? && scan_until(re)

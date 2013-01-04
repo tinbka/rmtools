@@ -1,2 +1,6 @@
 /pkg*
 Manifest.txt
+Makefile
+*.out
+*.o
+*.so

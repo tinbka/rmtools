@@ -82,30 +82,40 @@ class Array
   end
   
   
-  # setters/getters
+  # setters/getters/deleters
   def set_where(value, &block)
-    return unless e = find(&block)
-    self[index(e)] = value
+    each_with_index {|e, i| return self[i] = value if block[e]}
+    nil
   end
   
   def set_all_where(value, &block)
-    select(&block).each {|e| self[index(e)] = value}
+    #select(&block).each {|e| self[index(e)] = value} # 3.643
+    #each_with_index {|e, i| self[i] = value if block[e]} # 0.240
+    # велосипедист, бля
+    map! {|e| block[e] ? value : e} # 0.168
   end
   
-  def indice_where(&block)
-    return unless e = find(&block)
-    index(e)
+  def index_where(&block)
+    each_with_index {|e, i| return i if block[e]}
+    nil
   end
-  alias :pos :indice_where
+  alias :pos :index_where
   
   def indices_where(&block)
-    i = nil
-    find_all(&block).map {|e|
-      i = i ?
-        self[i+1..-1].index(e) + i + 1 :
-        index(e)
-    }
+    a = []
+    each_with_index {|e, i| a << i if block[e]}
+    a
   end
+  
+  def del_where(&block)
+    each_with_index {|e, i| return delete_at i if block[e]}
+    nil
+  end
+  
+  def del_all_where(&block)
+    reject!(&block)
+  end
+  
   
   
   # splitters
@@ -157,6 +167,10 @@ class Array
   
   def select_by(key, value)
     select {|e| e.__send__(key) == value}
+  end
+  
+  def reject_by(key, value)
+    reject {|e| e.__send__(key) == value}
   end
   
   # concatenation  

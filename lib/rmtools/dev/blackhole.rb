@@ -1,5 +1,6 @@
 # encoding: utf-8
 class BlackHole
+  __init__
 
   # abc = BlackHole.new
   # (abc.first.get {|_| !_}.something << 'blah blah')[123].raise!
@@ -14,6 +15,8 @@ class BlackHole
     else self
     end
   end
+  
+  def b; false end
   
   if RUBY_VERSION < '1.9'
     undef id

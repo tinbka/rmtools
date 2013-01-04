@@ -23,20 +23,28 @@ module RMTools
   IgnoreFiles = %r{#{Regexp.escape $:.grep(%r{/ruby/1\.(8|9\.\d)$})[0]}/irb(/|\.rb$)|/active_support/dependencies.rb$}
   
   def format_trace(a)
-    bt, calls, i = [], [], 0
+    return [] if !a.b
+    bt, steps, i = [], [], 0
     m = a[0].parse:caller
-    m.line -= 1 if m.file =~ /\.haml$/
+    # seems like that bug is fixed for now
+    #m.line -= 1 if m and m.file =~ /\.haml$/
     while i < a.size
       m2 = a[i+1] && a[i+1].parse(:caller)
-      m2.line -= 1 if m2 and m2.file =~ /\.haml$/
+      #m2.line -= 1 if m2 and m2.file =~ /\.haml$/
       if !m or m.path =~ IgnoreFiles
-          nil
-      elsif m and m.func and m2 and [m.path, m.line] == [m2.path, m2.line]
-          calls << " -> `#{m.func}'"
-      elsif m and m.line != 0 and line = RMTools.highlighted_line(m.path, m.line)
-          bt << "#{a[i]}#{calls.join}\n#{line}"
-          calls = []
-      else bt << a[i]
+        nil
+      else
+        step = a[i]
+        if m.block_level # > 1.9
+          step = step.sub(/block (\(\d+ levels\) )?in/, '{'+m.block_level+'}')
+        end
+        if m and m.func and m2 and [m.path, m.line] == [m2.path, m2.line]
+          steps << " -> `#{'{'+m.block_level+'} ' if m.block_level}#{m.func}'"
+        elsif m and m.line != 0 and line = RMTools.highlighted_line(m.path, m.line)
+          bt << "#{step}#{steps.join}\n#{line}"
+          steps = []
+        else bt << step
+        end
       end
       i += 1
       m = m2

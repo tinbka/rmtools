@@ -33,7 +33,7 @@ class Array
         self[flags] = []
       end
     end
-    each_index {|i| import(defaults, i) if self[i] == :def}
+    each_index {|i| import(defaults, i) if :def == self[i]}
     defaults.slice! 0, size
     concat defaults << opts
   end

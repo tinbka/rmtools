@@ -47,4 +47,4 @@ class Class
 end
 
 require 'set'
-[Hash, Array, Set, Regexp, File, Dir, Range, Class, Module].each {|klass| klass.__init__}
+[Hash, Set, Regexp, File, Dir, Range, Class, Module].each {|klass| klass.__init__}

@@ -107,7 +107,8 @@ module RMTools
         out = now.strftime cfg.out if cfg.path_format
       end
       if caler
-        str.gsub! "%caller", caler.sub(String::CALLER_RE, cfg.cf)
+        caler.sub!(/block (?:\((\d+) levels\) )?in/) {"{#{$1||1}}"}
+        str.gsub! "%caller", caler.sub(String::SIMPLE_CALLER_RE, cfg.cf)
       end
       str.gsub! "%text", text
       str << "\n" if opts&INLINE==0

@@ -3,25 +3,25 @@ RMTools::require 'lang/ansi'
 
 class String
   include RMTools::Cyrillic
-
-    def translit
-      gsub(/[ёЁ]/, 'yo').gsub(/[йЙ]/, 'y').gsub(/[цЦ]/, 'c').gsub(/[уУ]/, 'u').gsub(/[кК]/, 'k').gsub(/[еЕ]/, 'e').gsub(/[нН]/, 'n').gsub(/[гГ]/, 'g').gsub(/[шШ]/, 'sh').gsub(/[щЩ]/, 'sch').gsub(/[зЗ]/, 'z').gsub(/[хХ]/, 'h').gsub(/[ьЬъЪ]/, "'").gsub(/[фФ]/, 'f').gsub(/[иИыЫ]/, 'i').gsub(/[вВ]/, 'v').gsub(/[аА]/, 'a').gsub(/[пП]/, 'p').gsub(/[рР]/, 'r').gsub(/[оО]/, 'o').gsub(/[лЛ]/, 'l').gsub(/[дД]/, 'd').gsub(/[жЖ]/, 'j').gsub(/[эЭ]/, 'e').gsub(/[яЯ]/, 'ya').gsub(/[чЧ]/, 'ch').gsub(/[сС]/, 's').gsub(/[мМ]/, 'm').gsub(/[тТ]/, 't').gsub(/[бБ]/, 'b').gsub(/[юЮ]/, 'yu')
-    end
-    
-    def swap
-      sub(/([a-zA-Z])|([А-пр-ёЁ])/) {|m| return $~[1]? en2ru: ru2en}
-      self
-    end
-    
-    def caps?
-      self =~ /^[А-ЯЁ][А-ЯЁ\d ]+$/
-    end
-    
-    def cyr?
-      self !~ /[^А-пр-ёЁ]/
-    end
+  
+  def swap
+    sub(/([a-zA-Z])|([А-пр-ёЁ])/) {|m| return $~[1]? en2ru: ru2en}
+    self
+  end
+  
+  def caps?
+    self =~ /^[А-ЯЁ][А-ЯЁ\d ]+$/
+  end
+  
+  def cyr?
+    self !~ /[^А-пр-ёЁ]/
+  end
     
   if RUBY_VERSION > "1.9"
+
+    def translit
+      gsub(/ё/i, 'yo').gsub(/й/i, 'y').gsub(/ц/i, 'c').gsub(/у/i, 'u').gsub(/к/i, 'k').gsub(/е/i, 'e').gsub(/н/i, 'n').gsub(/г/i, 'g').gsub(/ш/i, 'sh').gsub(/щ/i, 'sch').gsub(/з/i, 'z').gsub(/х/i, 'h').gsub(/[ьъ]/i, "'").gsub(/ф/i, 'f').gsub(/[иы]/i, 'i').gsub(/в/i, 'v').gsub(/а/i, 'a').gsub(/п/i, 'p').gsub(/р/i, 'r').gsub(/о/i, 'o').gsub(/л/i, 'l').gsub(/д/i, 'd').gsub(/ж/i, 'j').gsub(/э/i, 'e').gsub(/я/i, 'ya').gsub(/ч/i, 'ch').gsub(/с/i, 's').gsub(/м/i, 'm').gsub(/т/i, 't').gsub(/б/i, 'b').gsub(/ю/i, 'yu')
+    end
     
     def ru2en
       tr "ёйцукенгшщзхъфывапролдэячсмить/.ю?,б\"№;:жЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИВТЬБЮ", "`qwertyuiop[]asdfghjkl'zxcvbnm|/.&?,@\#$^;~QWERTYUIOP{}ASDFGHJKL:\"ZXCVBDNM<>"
@@ -61,7 +61,12 @@ class String
     alias csqueeze squeeze
     
     def ci; self end
+    
   else
+
+    def translit
+      gsub(/[ёЁ]/, 'yo').gsub(/[йЙ]/, 'y').gsub(/[цЦ]/, 'c').gsub(/[уУ]/, 'u').gsub(/[кК]/, 'k').gsub(/[еЕ]/, 'e').gsub(/[нН]/, 'n').gsub(/[гГ]/, 'g').gsub(/[шШ]/, 'sh').gsub(/[щЩ]/, 'sch').gsub(/[зЗ]/, 'z').gsub(/[хХ]/, 'h').gsub(/[ьЬъЪ]/, "'").gsub(/[фФ]/, 'f').gsub(/[иИыЫ]/, 'i').gsub(/[вВ]/, 'v').gsub(/[аА]/, 'a').gsub(/[пП]/, 'p').gsub(/[рР]/, 'r').gsub(/[оО]/, 'o').gsub(/[лЛ]/, 'l').gsub(/[дД]/, 'd').gsub(/[жЖ]/, 'j').gsub(/[эЭ]/, 'e').gsub(/[яЯ]/, 'ya').gsub(/[чЧ]/, 'ch').gsub(/[сС]/, 's').gsub(/[мМ]/, 'm').gsub(/[тТ]/, 't').gsub(/[бБ]/, 'b').gsub(/[юЮ]/, 'yu')
+    end
     
     def csize
       UTF2ANSI[self].size

@@ -22,7 +22,7 @@ class Module
   end
   
   def self_name
-    @self_name ||= name.match(/[^:]+$/)
+    @self_name ||= name[/[^:]+$/]
   end
   
   def my_methods filter=//

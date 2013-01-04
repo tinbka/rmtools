@@ -3,8 +3,6 @@ require 'iconv'
 # Although ruby >= 1.9.3 would complain about not using String#encode, iconv is 2-4 times faster and still handles the ruby string encoding
 
 module RMTools
-  ANSI2UTF = Iconv.new("UTF-8", "WINDOWS-1251").method :iconv
-  UTF2ANSI = Iconv.new("WINDOWS-1251", "UTF-8").method :iconv
 
   module Cyrillic
     RU_LETTERS = "абвгдеёжзийклмнопрстуфхцчшщьыъэюя", "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЬЫЪЭЮЯ"
@@ -17,24 +15,26 @@ module RMTools
     end
   end
   
+  ANSI2UTF = Cyrillic::ANSI2UTF = Iconv.new("UTF-8//IGNORE", "WINDOWS-1251//IGNORE").method(:iconv)
+  UTF2ANSI = Cyrillic::UTF2ANSI = Iconv.new("WINDOWS-1251//IGNORE", "UTF-8//IGNORE").method(:iconv)
+  ICONVS = {}
 end
   
 class String
   
-  # Actually, for short strings and 1251<->65001 it's much faster to use predefined ANSI2UTF and UTF2ANSI procs
-  def utf(from_encoding='WINDOWS-1251')
-    Iconv.new('UTF-8', from_encoding).iconv(self)
+  def utf(from_encoding='WINDOWS-1251//IGNORE')
+    (ICONVS['UTF-8<'+from_encoding] ||= Iconv.new('UTF-8//IGNORE', from_encoding)).iconv(self)
   end
   
-  def ansi(from_encoding='UTF-8')
-    Iconv.new('WINDOWS-1251', from_encoding).iconv(self)
+  def ansi(from_encoding='UTF-8//IGNORE')
+    (ICONVS['WINDOWS-1251<'+from_encoding] ||= Iconv.new('WINDOWS-1251//IGNORE', from_encoding)).iconv(self)
   end
   
-  def utf!(from_encoding='WINDOWS-1251')
+  def utf!(from_encoding='WINDOWS-1251//IGNORE')
     replace utf from_encoding
   end
   
-  def ansi!(from_encoding='UTF-8')
+  def ansi!(from_encoding='UTF-8//IGNORE')
     replace ansi from_encoding
   end
   

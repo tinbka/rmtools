@@ -4,7 +4,11 @@ RMTools::require 'conversions/string'
 class String
   CALLER_RE =    %r{^(.*?([^/\\]+?))#{	    # ( path ( file ) ) 
                               }:(\d+)(?::in #{	      # :( line )[ :in
-                              }[`<](.+?)[>']#{   # `( closure )' ]
+                              }`(block (?:\((\d+) levels\) )?in )?(.+?)'#{   # `[ block in ] ( closure )' ]
+                            })?$}
+  SIMPLE_CALLER_RE =    %r{^(.*?([^/\\]+?))#{	    # ( path ( file ) ) 
+                              }:(\d+)(?::in #{	      # :( line )[ :in
+                              }`(.+?)'#{   # `( closure )' ]
                             })?$}
   URL_RE = %r{^((?:([^:]+)://)#{	            #  ( protocol
                       }([^/:]*(?::(\d+))?))?#{	  #  root[:port] )
@@ -38,10 +42,11 @@ class String
             {  'path' => m[1],
                 'file' => m[2],
                 'line' => m[3].to_i,
-                'func' => m[4],
-                'fullpath' => 
-                 m[1]['('] ? m[1] : 
-           File.expand_path(m[1])     }
+                'block_level' => m[4] && (m[5] || 1).to_i, # > 1.9
+                'func' => m[6],
+                'fullpath' => m[1] =~ /[\(\[]/ ? 
+                  m[1] : 
+                  File.expand_path(m[1])     }
         when :ip;          self[IP_RE]
         when :ip_range; (m = match IP_RANGE_RE) && m[1]..m[2]
         else raise ArgumentError, "Incorrect flag. Correct flags: :uri, :caller, :ip, :ip_range"
