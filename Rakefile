@@ -2,7 +2,7 @@ require 'rake'
 require './lib/rmtools/install'
 compile_manifest
 
-RMTOOLS_VERSION = '1.2.12'
+RMTOOLS_VERSION = '1.2.13'
 begin
     require 'hoe'
     config = Hoe.spec 'rmtools' do
@@ -11,7 +11,7 @@ begin
         self.summary = 'Yet another Ruby applied lib'
         self.description = 'Applied library primarily for debug and text/arrays/files processing purposes.'
         self.changes = paragraphs_of('README.txt', 5..-1).join("\n\n")
-        self.url = 'http://github.com/tinbka'
+        self.urls = ['https://github.com/tinbka/rmtools']
        
         self.extra_deps = [['rake','>= 0.8.7'], ['activesupport','>= 2.3.8']]
     end

@@ -1,5 +1,5 @@
 Copyright (c) 2010-2013
-    Baev Sergey <tinbka@gmail.com>
+    Sergey Baev <tinbka@gmail.com>
 
 This work is licensed under the same license as Ruby language.
 
@@ -9,7 +9,7 @@ Methods for basic classes addon collection.
 
 == CHANGES
 
-== Version 1.2.12
+== Version 1.2.13
 
 * Smartified Array bicycles: #index_where, #indices_where, #set_where, #set_all_where, #del_where, #del_all_where
 * Added #arrange_by to Array enumerators

@@ -173,6 +173,10 @@ class Array
     reject {|e| e.__send__(key) == value}
   end
   
+  def arrange_by(*args, &block)
+    arrange(*args, &block)
+  end
+  
   # concatenation  
   # analogue to String#>>
   def >>(ary)

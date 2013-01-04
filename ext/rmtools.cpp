@@ -423,7 +423,7 @@ static int unsigned_big_lte(VALUE x, VALUE y)
   long ylen = RBIGNUM_LEN(y);
   if (xlen < ylen) return 1;
   if (xlen > RBIGNUM_LEN(y)) return 0;
-  while(xlen-- && (BDIGITS(x)[xlen]==BDIGITS(y)[xlen]));
+  while (xlen-- && (BDIGITS(x)[xlen]==BDIGITS(y)[xlen])) {};
   if (-1 == xlen) return 1; // ==
   return (BDIGITS(x)[xlen] > BDIGITS(y)[xlen]) ? 0 : 1;
 }
