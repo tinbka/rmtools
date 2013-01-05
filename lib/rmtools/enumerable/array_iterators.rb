@@ -14,7 +14,7 @@ unless defined? RMTools::Iterators
   # => [[1, 2, 3], [3, 4, 6]]
   class Array
     alias :throw_no :method_missing
-    RMTools::Iterators = %r{^(#{(my_methods(/_by$/)+%w{every no select reject partition find_all find sum foldr})*'|'})_([\w\d\_]+[!?]?)}
+    RMTools::Iterators = %r{^(#{(instance_methods.grep(/_by$/)+%w{every no select reject partition find_all find sum foldr})*'|'})_([\w\d\_]+[!?]?)}
     
     def method_missing(method, *args, &block)
       if match = (meth = method.to_s).match(RMTools::Iterators)

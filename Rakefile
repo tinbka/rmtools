@@ -2,7 +2,7 @@ require 'rake'
 require './lib/rmtools/install'
 compile_manifest
 
-RMTOOLS_VERSION = '1.2.13'
+RMTOOLS_VERSION = '1.2.14'
 begin
     require 'hoe'
     config = Hoe.spec 'rmtools' do
