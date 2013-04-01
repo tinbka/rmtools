@@ -1,4 +1,5 @@
 # encoding: utf-8
+# Don't use it, it's slow as fuck
 RMTools::require 'dev/binding'
 require 'active_support/core_ext/class'
 

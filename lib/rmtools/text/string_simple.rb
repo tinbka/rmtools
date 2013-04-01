@@ -79,6 +79,7 @@ class String
   #end
   #
   # this method defined in Enumerable and returns Enumerable::Enumerator that should be converted to array of integers, not hex-strings
+  
   if RUBY_VERSION < '1.9'
     def symbols_count
       unpack('U*').size
@@ -88,5 +89,32 @@ class String
       size
     end
   end
+  
+  
+  # make simple strings readable by FTS engines and make results more cacheable by key-value dbs
+  def to_search
+    gsub(/[\0-\/:-@\[-`{-~ \s]/, ' ').strip.squeeze(' ').fdowncase
+  end
+  
+  # remove empty strings from html output
+  def squeeze_newlines
+    gsub(/\s+\n+/, "\n").squeeze("\n")
+  end
+  
+  # polymorphic helper
+  def recordize(whiny=true)
+    classname, id = split('#')
+    unless id
+      if whiny
+        raise ArgumentError, "Could not find record by string: #{inspect}"
+      else return false
+      end
+    end
+    model = classname.constantize
+    model.respond_to?(:get) ?
+      model.get(id) : 
+      model.where(:id => id).first
+  end
+  alias :to_record :recordize
   
 end

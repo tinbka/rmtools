@@ -2,14 +2,20 @@
 class Class
   
   # define python-style initializer
+  # p = Post()
+  # p = Post user_id: 10
   def __init__
-    modname, classname = name.match(/^(?:(.+)::)?([^:]+)$/)[1..2]
-    classname ||= modname
-    mod = '::'.in(name) ? eval(modname) : RMTools
-    mod.module_eval "def #{classname} *args; #{name}.new *args end
-                  module_function :#{classname}"
-    if mod != RMTools
-      mod.each_child {|c| c.class_eval "include #{mod}; extend #{mod}" if !c.in c.children}
+    path = name.split('::')
+    classname = path[-1]
+    mod = '::'.in(name) ? eval(path[0..-2]*'::') : RMTools
+    if mod.is Module
+      mod.module_eval "def #{classname} *args; #{name}.new *args end
+                   module_function :#{classname}"
+      if mod != RMTools
+        mod.each_child {|c| c.class_eval "include #{mod}; extend #{mod}" if !c.in c.children}
+      end
+    else
+      mod.class_eval "def #{classname} *args; #{name}.new *args end"
     end
   end 
   

@@ -65,4 +65,8 @@ module Kernel
     Array === method ? classes : classes[method]
   end
   
+  def thread(&block)
+    Thread.new(&block)
+  end
+  
 end

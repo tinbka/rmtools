@@ -1,4 +1,6 @@
 # Emulate python's @-operator
+# Consider as proof of concept since there is alias_method_chain
+# that rubyists used to use for decorating
 class Module
   
 private

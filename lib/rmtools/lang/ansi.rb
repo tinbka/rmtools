@@ -7,10 +7,12 @@ module RMTools
   module Cyrillic
     RU_LETTERS = "абвгдеёжзийклмнопрстуфхцчшщьыъэюя", "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЬЫЪЭЮЯ"
     
+    ANSI_LETTERS_UC = ["\270\340-\377", "\250\300-\337"]
+    ANSI_LETTERS_DC = ANSI_LETTERS_UC.reverse
+    ANSI_YOYE = ["\270\250", "\345\305"]
     if RUBY_VERSION > '1.9'
-      ANSI_LETTERS_UC = ["\270\340-\377", "\250\300-\337"].force_encodings "Windows-1251"
-      ANSI_LETTERS_DC = ANSI_LETTERS_UC.reverse
-      ANSI_YOYE = ["\270\250", "\345\305"].force_encodings "Windows-1251"
+      ANSI_LETTERS_UC.force_encodings "Windows-1251"
+      ANSI_YOYE.force_encodings "Windows-1251"
       ANSI_ENCODING = ANSI_LETTERS_UC[0].encoding
     end
   end

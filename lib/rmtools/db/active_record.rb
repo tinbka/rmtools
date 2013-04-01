@@ -83,11 +83,12 @@ module ActiveRecord
             SELECT @cnt:=#{cnt ? cnt.to_i : 'COUNT(*)'}+1#{-discnt.to_i if discnt}, @lim:=#{limit.to_i}#{" FROM #{cnt_tables} WHERE #{cnt_where}" if !cnt}
           ) vars
           STRAIGHT_JOIN (
-            SELECT #{fields}, @lim:=@lim-1 FROM #{tables} WHERE (@cnt:=@cnt-1) AND RAND() < @lim/@cnt#{" AND (#{_where})" if _where}
+            SELECT #{fields}, @lim:=@lim-1 FROM #{tables} WHERE #{"(#{_where}) AND " if _where} (@cnt:=@cnt-1) AND RAND() < @lim/@cnt
           ) i", options])
       end
         
       class_attribute :enums
+      # virtual (only-in-ruby) "enum" type support
       def enum hash
         key = hash.keys.first
         (self.enums ||= {}).merge! hash
@@ -101,9 +102,33 @@ module ActiveRecord
          write_attribute('#{key}', Fixnum === val ? val : self.class.enums[:#{key}].index val.to_s
         end
        }
-     end
+      end
+     
+      # usable to define shortcut-scopes on class with number of boolean flags: #admin, #open, #removed, etc
+      def boolean_scopes!
+        columns.select_by_type(:boolean).names.to_syms.each {|col|
+          unless respond_to? col
+            scope col, where("#{quoted_table_name}.#{col} = 1")
+          end
+        }
+        rescue
+        nil
+      end
+     
+      # more universal version of boolean_scopes! that helps to find records with any non-null values,
+      # including zero and empty string
+      def non_null_scopes!
+        boolean_scopes!
+        columns.names.to_syms.each {|col|
+          unless respond_to? col
+            scope col, where("#{quoted_table_name}.#{col} is not null")
+          end
+        }
+        rescue
+        nil
+      end
    
-   end
+    end
    
     # fix for thinking_sphinx equation in #instances_from_class:
     # ids.collect {|obj_id| instances.detect do |obj| obj.primary_key_for_sphinx == obj_id end}

@@ -17,6 +17,52 @@ class String
     self !~ /[^А-пр-ёЁ]/
   end
     
+  def cupcase
+    encoding != ANSI_ENCODING ?
+      ANSI2UTF[UTF2ANSI[self].tr(*ANSI_LETTERS_UC)] :
+      tr(*ANSI_LETTERS_UC)      
+  end
+  def cupcase!
+    encoding != ANSI_ENCODING ?
+      ANSI2UTF[UTF2ANSI[self].tr!(*ANSI_LETTERS_UC)] :
+      tr!(*ANSI_LETTERS_UC)      
+  end
+  
+  def cdowncase
+    encoding != ANSI_ENCODING ?
+      ANSI2UTF[UTF2ANSI[self].tr(*ANSI_LETTERS_DC)] :
+      tr(*ANSI_LETTERS_DC)
+  end
+  def cdowncase!
+    encoding != ANSI_ENCODING ?
+      ANSI2UTF[UTF2ANSI[self].tr!(*ANSI_LETTERS_DC)] :
+      tr!(*ANSI_LETTERS_DC)
+  end
+  
+  def rmumlaut
+    encoding != ANSI_ENCODING ?
+      ANSI2UTF[UTF2ANSI[self].tr(*ANSI_YOYE)] :
+      tr(*ANSI_YOYE)
+  end
+    
+  # full upcase, because cdowncase doesn't convert non-cyrillic
+  def fupcase
+    upcase.cupcase
+  end
+  def fupcase!
+    res = upcase!
+    cupcase! or res
+  end
+  
+  # full downcase, because cdowncase doesn't convert non-cyrillic
+  def fdowncase
+    downcase.cdowncase
+  end
+  def fdowncase!
+    res = downcase!
+    cdowncase! or res
+  end
+    
   if RUBY_VERSION > "1.9"
 
     def translit
@@ -31,33 +77,18 @@ class String
       tr "`qwertyuiop[]asdfghjkl;:'zxcvbnm,./|?\"@\#$^&~QWERTYUIOP{}ASDFGHJKLZXCVBNM<>", "ёйцукенгшщзхъфывапролджЖэячсмитьбю./,Э\"№;:?ЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЯЧСМИТЬБЮ"
     end
     
-    def cupcase
-      encoding != ANSI_ENCODING ?
-        ANSI2UTF[UTF2ANSI[self].tr(*ANSI_LETTERS_UC)]:
-        tr(*ANSI_LETTERS_UC)
-    end
-    
-    def cdowncase
-      encoding != ANSI_ENCODING ?
-        ANSI2UTF[UTF2ANSI[self].tr(*ANSI_LETTERS_DC)]:
-        tr(*ANSI_LETTERS_DC)
+    def ccap
+      self[0].cupcase + self[1..-1]
     end
     
     def cuncap
       self[0].cdowncase + self[1..-1]
-    end
-    
-    def rmumlaut
-      encoding != ANSI_ENCODING ?
-        ANSI2UTF[UTF2ANSI[self].tr(*ANSI_YOYE)]:
-        tr(*ANSI_YOYE)
     end
       
     alias csize size
     alias cljust ljust
     alias cjust rjust
     alias ccenter center
-    alias ccap capitalize
     alias csqueeze squeeze
     
     def ci; self end
@@ -84,18 +115,6 @@ class String
       ANSI2UTF[UTF2ANSI[self].center(*args)]
     end
     
-    def cupcase(encode=1)
-      encode ?
-        ANSI2UTF[UTF2ANSI[self].tr("\270\340-\377", "\250\300-\337")]:
-        tr("\270\340-\377", "\250\300-\337")
-    end
-    
-    def cdowncase(encode=1)
-      encode ?
-        ANSI2UTF[UTF2ANSI[self].tr("\250\300-\337", "\270\340-\377")]:
-        tr("\250\300-\337", "\270\340-\377")
-    end
-    
     def ccap(encode=1)
       self[0,2].cupcase(encode) + self[2..-1]
     end
@@ -106,12 +125,6 @@ class String
     
     def csqueeze
       ANSI2UTF[UTF2ANSI[self].squeeze]
-    end
-    
-    def rmumlaut(encode=1)
-      encode ?
-        ANSI2UTF[UTF2ANSI[self].tr("\270\250", "\345\305")]: 
-        tr("\270\250", "\345\305")
     end
     
     def ru2en

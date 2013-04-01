@@ -56,10 +56,10 @@ module RMTools
   def format_trace_to_html(a)
     a.map! do |lines|
       caller_string, snippet = lines/"\n"
-      caller = caller_string.parse(:caller)
-      if caller
-        path = caller.path
-        lines = ["<a href='#{CGI.escape 'file://'+path}'>#{path}</a>:#{caller.line} in #{caller.func}"]
+      caler = caller_string.parse(:caller)
+      if caler
+        path = caler.path
+        lines = ["<a href='#{CGI.escape 'file://'+path}'>#{path}</a>:#{caler.line} in #{caler.func}"]
         lines << RMTools::Painter.clean(snippet) if snippet
         lines * "\n"
       else

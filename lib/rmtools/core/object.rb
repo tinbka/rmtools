@@ -48,6 +48,31 @@ class Object
     container.size == 1 ? container[0].include?(self) : container.include?(self)
   end  
   
+  def inspect_instance_variables
+    instance_eval {binding().inspect_instance_variables}
+  end
+  
+  # def result_of_hard_calculation
+  #   ifndef {... hard_calculation ...}
+  # end
+  # ==
+  # def result_of_hard_calculation
+  #   if defined? @result_of_hard_calculation
+  #     return @result_of_hard_calculation
+  #   else
+  #     ... hard_calculation
+  #     res = ...
+  #     @result_of_hard_calculation = res
+  #   end
+  # end
+  def ifndef(ivar=caller(1)[0].parse(:caller).func)
+    ivar = :"@#{ivar}"
+    return instance_variable_get ivar if instance_variable_defined? ivar
+    instance_variable_set ivar, yield 
+  end
+  
+  
+  
   def deep_clone
     _deep_clone({})
   end

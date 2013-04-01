@@ -12,21 +12,26 @@ class IO
 end
 
 module RMTools
-
-    def rw(df, value=nil)
-      return false if value.nil?
-      df = df.tr '\\', '/'
-      path = File.dirname(df)
-      FileUtils.mkpath(path) if !File.directory?(path)
-      File.open(df, File::CREAT|File::WRONLY|File::TRUNC) {|f| f << value}
-      value.size
-    end
   
-    def write(df, value='', pos=0)
-      return false if value.nil?
-      df = df.tr '\\', '/'
-      path = File.dirname(df)
-      FileUtils.mkpath(path) if !File.directory?(path)
+  def self.prepare_write(df, value)
+    return false if value.nil?
+    value = value.inspect unless value.class == String
+    value = value.force_encoding('UTF-8') if RUBY_VERSION > '1.9'
+    df = df.tr '\\', '/'
+    path = File.dirname(df)
+    FileUtils.mkpath(path) if !File.directory?(path)
+    yield df, value
+    value.size
+  end
+  
+  def rw(df, value=nil)
+    RMTools::prepare_write df, value do
+      File.open(df, File::CREAT|File::WRONLY|File::TRUNC) {|f| f << value}
+    end
+  end
+
+  def write(df, value='', pos=0)
+    RMTools::prepare_write df, value do
       if pos == 0
         File.open(df, File::CREAT|File::WRONLY|File::APPEND) {|f| f << value}
       else
@@ -40,8 +45,8 @@ module RMTools
         end
         File.open(df, File::CREAT|File::WRONLY) {|f| f.pos = pos; f << value}
       end
-      value.size
     end
+  end  
   
     #    read('filename')
     ### => 'text from filename'

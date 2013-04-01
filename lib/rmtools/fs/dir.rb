@@ -1,7 +1,14 @@
 # encoding: utf-8
 RMTools::require 'fs/file'
+RMTools::require 'enumerable/traversal'
 
 class Dir
+  # included in order to use treeish search in directory content tree
+  include RMTools::ValueTraversal
+  
+  def to_traversable
+    RMTools::ValueTraversable.new(children)
+  end
   
   def include?(name)
     #content.map {|f| File.split(f)[1]}.include? name
@@ -12,9 +19,9 @@ class Dir
     list = []
     cont = content.map {|f|
       if File.directory?(f)
-             rc = Dir.new(f).recursive_content.map {|f| f.sub(/^\.\//, '')} 
+             rc = Dir.new(f).recursive_content(flat)
              flat ? list.concat(rc) : rc
-      else flat ? (list << f) : f 
+      else flat ? (list << f.sub(/^\.\//, '')) : f.sub(/^\.\//, '')
       end
     }
     (flat ? list : cont)

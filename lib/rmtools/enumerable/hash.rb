@@ -1,8 +1,14 @@
 # encoding: utf-8
 require 'active_support/core_ext/hash'
+RMTools::require 'enumerable/traversal'
 
 class Hash
+  include RMTools::KeyValueTraversal
   alias :>> :reverse_merge!
+  
+  def to_traversable
+    RMTools::KeyValueTraversable.new(self)
+  end
   
   def +(other_hash)
     merge(other_hash || {})

@@ -2,18 +2,17 @@ require 'rake'
 require './lib/rmtools/install'
 compile_manifest
 
-RMTOOLS_VERSION = '1.2.14'
+RMTOOLS_VERSION = '1.3.0'
 begin
     require 'hoe'
-    config = Hoe.spec 'rmtools' do
-        developer("Sergey Baev", "tinbka@gmail.com")
+    config = Hoe.spec 'rmtools' do |h|
+        h.developer("Sergey Baev", "tinbka@gmail.com")
 
-        self.summary = 'Yet another Ruby applied lib'
-        self.description = 'Applied library primarily for debug and text/arrays/files processing purposes.'
-        self.changes = paragraphs_of('README.txt', 5..-1).join("\n\n")
-        self.urls = ['https://github.com/tinbka/rmtools']
+        #self.summary = 'Yet another Ruby applied lib'
+        h.description = 'Applied library primarily for debug and text/arrays/files processing purposes.'
+        h.urls = ['https://github.com/tinbka/rmtools']
        
-        self.extra_deps = [['rake','>= 0.8.7'], ['activesupport','>= 2.3.8']]
+        h.extra_deps = [['rake','>= 0.8.7'], ['activesupport','>= 2.3.8']]
     end
     config.spec.extensions << 'ext/extconf.rb'
 rescue LoadError

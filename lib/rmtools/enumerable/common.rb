@@ -1,6 +1,10 @@
 # encoding: utf-8
 module Enumerable
   
+  def to_traversable
+    RMTools::ValueTraversable(to_a)
+  end
+  
   def import(arr, index)
     self[index] = arr[index]
   end
@@ -26,7 +30,7 @@ module Enumerable
     res
   end
       
-  def recursive_find_all(&b)
+  def recursive_select(&b)
     res = []
     to_a.each {|e|
       res << e if b[e]

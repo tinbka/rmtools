@@ -2,14 +2,20 @@
 RMTools::require 'conversions/string'
 
 class String
-  CALLER_RE =    %r{^(.*?([^/\\]+?))#{	    # ( path ( file ) ) 
-                              }:(\d+)(?::in #{	      # :( line )[ :in
-                              }`(block (?:\((\d+) levels\) )?in )?(.+?)'#{   # `[ block in ] ( closure )' ]
-                            })?$}
-  SIMPLE_CALLER_RE =    %r{^(.*?([^/\\]+?))#{	    # ( path ( file ) ) 
-                              }:(\d+)(?::in #{	      # :( line )[ :in
-                              }`(.+?)'#{   # `( closure )' ]
-                            })?$}
+  CALLER_RE = %r{^(.*?([^/\\]+?))#{	    # ( path ( file ) ) 
+                           }:(\d+)(?::in #{	      # :( line )[ :in
+                           }`(block (?:\((\d+) levels\) )?in )?(.+?)'#{   # `[ block in ] ( closure )' ]
+                         })?$}
+  SIMPLE_CALLER_RE = %r{^(.*?([^/\\]+?))#{	    # ( path ( file ) ) 
+                                       }:(\d+)(?::in #{	      # :( line )[ :in
+                                       }`(.+?)'#{   # `( closure )' ]
+                                     })?$}
+  JS_CALLER_RE = %r{^(?:(\S*)[\s@])?\(?(?:[^:]+://#{ #  ( func ) (protocol
+                               }[^/:]*(?::\d+)?)?#{	               #  root[:port]
+                               }/([^?#]*?\/(\w+(?:\.\w+)?)#{     #  ( path/( file[ .fileext ] )
+                               }(?:\?.*?)?)#{	                           #  [ ?query ] )
+                               }:(\d+)?(?::(\d+))?#{	               #  :( line ):( char ))
+                            }\)?$}
   URL_RE = %r{^((?:([^:]+)://)#{	            #  ( protocol
                       }([^/:]*(?::(\d+))?))?#{	  #  root[:port] )
                       }((/[^?#]*?(?:\.(\w+))?)#{	#  ( path[.( fileext )]
@@ -47,6 +53,15 @@ class String
                 'fullpath' => m[1] =~ /[\(\[]/ ? 
                   m[1] : 
                   File.expand_path(m[1])     }
+        when :js_caller
+          m = match JS_CALLER_RE
+          !m || m[0].empty? ? nil : 
+            {  'func' => m[1],
+                'fullpath' => m[2],
+                'file' => m[3],
+                'line' => m[4] && m[4].to_i,
+                'char' => m[5] && m[5].to_i,
+                'from' => m[3..5].compact*':' }
         when :ip;          self[IP_RE]
         when :ip_range; (m = match IP_RANGE_RE) && m[1]..m[2]
         else raise ArgumentError, "Incorrect flag. Correct flags: :uri, :caller, :ip, :ip_range"
