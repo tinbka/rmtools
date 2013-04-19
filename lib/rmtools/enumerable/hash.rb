@@ -5,6 +5,7 @@ RMTools::require 'enumerable/traversal'
 class Hash
   include RMTools::KeyValueTraversal
   alias :>> :reverse_merge!
+  alias :<<  :merge!
   
   def to_traversable
     RMTools::KeyValueTraversable.new(self)

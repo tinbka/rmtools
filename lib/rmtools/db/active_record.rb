@@ -168,6 +168,10 @@ module ActiveRecord
       "#{self.class.name.tableize}/#{id}"
     end
     
+    def with_same(attr)
+      self.class.where(attr => self[attr])
+    end
+    
   end
   
   class Relation

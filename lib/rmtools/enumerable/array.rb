@@ -64,12 +64,12 @@ class Array
 
   # arithmetics
   def avg
-    sum.to_f/size
+    empty? ? 0 : sum.to_f/size
   end
   
   # for use with iterators
   def avg_by(&b)
-    sum(&b).to_f/size
+    empty? ? 0 : sum(&b).to_f/size
   end
   
   def scale(top)
@@ -135,11 +135,7 @@ class Array
   end
   
   
-  # selectors
-  def sorted_uniq_by(&block) 
-    uniq_by(&block).sort_by(&block)
-  end
-  
+  # selectors  
   def odds
     values_at(*(0...size).odds)
   end
@@ -173,8 +169,30 @@ class Array
     reject {|e| e.__send__(key) == value}
   end
   
+  # sort / group
+  def sorted_uniq_by(&block) 
+    uniq_by(&block).sort_by(&block)
+  end
+  
   def arrange_by(*args, &block)
     arrange(*args, &block)
+  end
+  
+  def indices_map
+    addresses = {}
+    (size-1).downto(0) {|i| addresses[self[i]] = i}
+    addresses
+  end
+  alias :addresses :indices_map
+  
+  def sort_along_by(ary)
+    # Condition is relevant for ruby 1.9, I haven't tested it on 1.8 yet
+    if size*ary.size > 400
+      addresses = ary.indices_map
+      sort_by {|e| addresses[yield(e)]}
+    else
+      sort_by {|e| ary.index yield e}
+    end
   end
   
   # concatenation  
@@ -203,15 +221,19 @@ class Array
   
   
   
-  
-  def map_hash(&b)
-    Hash[map(&b)]
-  end
-
+  # enumerating
   def map_with_index(&block)
     each_with_index.map(&block)
   end
     
+  def each_two
+    _end = size-1
+    self[0..-2].each_with_index {|u, i|
+      (i+1.._end).each {|j|
+        yield u, self[j]
+      }
+    }
+  end
     
     
     
@@ -228,6 +250,11 @@ class Array
   def rfind
     reverse_each {|e| return e if yield e}
     nil
+  end
+  
+  # rightmost #uniq
+  def runiq
+    reverse.uniq.reverse
   end
   
 end

@@ -41,6 +41,10 @@ module Enumerable
     res.uniq
   end
   
+  def map_hash(&block)
+    Hash[map(&block)]
+  end
+  
   def present
     to_a.present
   end

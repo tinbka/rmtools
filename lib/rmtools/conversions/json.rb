@@ -16,7 +16,18 @@ begin
     def from_json(options={}) # :symbolize_keys
       Yajl::Parser.parse self, options
     end
-  end    
+  end
+  
+  # it may not be needed at all, though I've seen one gem that trying to use these methods
+  module Yajl
+    def self.parse(*args)
+      Parser.parse(*args)
+    end
+    
+    def self.encode(*args)
+      Encoder.encode(*args)
+    end
+  end
   
 rescue LoadError
   if defined? JSON

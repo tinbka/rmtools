@@ -11,6 +11,8 @@ class Hash
   # hash.unknown_function # => nil
   # hash[:def] = 456
   # hash.def # => 456
+  #
+  # This priority should be stable, because 
   def method_missing(method, *args)
     str = method.to_s
     if str =~ /=$/
@@ -18,19 +20,19 @@ class Hash
     elsif !args.empty? or str =~ /[!?]$/
       throw_no method 
     else
-      a = self[str]
-      (a == default) ? self[method] : a
+      a = self[method]
+      (a == default) ? self[str] : a
     end
   end
   
   # Redefine since these methods are deprecated anyway
   def type
-    a = self['type']
-    (a == default) ? self[:type] : a
+    a = self[:type]
+    (a == default) ? self['type'] : a
   end
   def id
-    a = self['id']
-    (a == default) ? self[:id] : a
+    a = self[:id]
+    (a == default) ? self['id'] : a
   end
 
 end
@@ -42,16 +44,24 @@ class String
     #   immutable:
     # '123' + 95 # => '12395'
     # '123'.plus 95 # => raise TypeError
-    #   mutable:
-    # '123' << 95 # => '12395'
-    # '123'.concat 95 # => '123_'
     def +(str)
       plus str.to_s
     end
     
+    #   mutable:
+    # '123' << 95 # => '12395'
+    # '123'.concat 95 # => '123_'
     def <<(str)
       concat str.to_s
     end
+  end
+  
+end
+
+class Symbol
+  
+  def +(str)
+    to_s + str
   end
   
 end

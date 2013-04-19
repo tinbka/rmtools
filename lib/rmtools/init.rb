@@ -1,12 +1,10 @@
 # encoding: utf-8
 require 'active_support'
+require File.expand_path('require', File.dirname(__FILE__))
+
 module RMTools
-  dir = File.dirname __FILE__
-  VERSION = IO.read(File.join dir, '..', '..', 'Rakefile').match(/RMTOOLS_VERSION = '(.+?)'/)[1]
-  
-  require File.expand_path('require', dir)
-  %w[core enumerable text time functional
-    conversions ip lang rand console b
+  %w[version core enumerable text time functional
+    conversions ip lang rand console
     fs db xml
     ../rmtools.so
   ].each {|file| RMTools::require file}

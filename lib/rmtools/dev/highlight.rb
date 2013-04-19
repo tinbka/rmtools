@@ -26,7 +26,7 @@ end
 class Proc
   
   def inspect
-    "#{str=to_s}: #{@string ? Painter.green(@string) : "\n"+RMTools.highlighted_line(*source_location)}"
+    "#{to_s}#{@string ? ': '+Painter.green(@string) : source_location && ": \n"+RMTools.highlighted_line(*source_location)}"
   end
   
 end

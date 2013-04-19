@@ -1,15 +1,21 @@
 ### RMTools
 [github](https://github.com/tinbka/rmtools)
 
-Collection of helpers for any need: strings, enumerables, Module... hundreds of bicycles, shortcuts you ever wanted to implement is here, optimized for performance.
-Small dev library (in progress for ever): fast and smart logger, binding explorer, backtrace formatter, all are console-colored.
+Collection of helpers for any need: strings, enumerables, Module... hundreds of bicycles and shortcuts you ever wanted to implement are here, optimized for performance.
+Small dev library (constantly in progress): fast and smart logger, binding explorer, backtrace formatter, all are console-colored.
 Started from basic classes, now it contains low-level helpers for ActiveRecord and makes LibXML more jQueryish.
 
-RMTools is based on opinion that some boiler-plate should be thrown away from Ruby making it more expressive with no (0~10%) performance penalty:
+RMTools is based on opinion that some boiler-plate should be thrown away from Ruby making it more expressive with almost no (<< 10%) performance penalty:
+
 `hash['id']` -> `hash.id`
+
 `ary.map(&:id)` -> `ary.ids`
+
 `ary.map {|h| h['id']}` -> `ary.ids`
+
 `comments.posts.sorted_uniq_by_id.select_by_user_id(user_id).sum_points` -> `comments.map {|c| c.post}.sort_by {|p| p.id}.uniq_by {|p| p.id}.select {|p| p.user_id == user_id}.sum {|p| p.points}`
+
+**Code less, do more!**
 
 ---
 
@@ -22,6 +28,31 @@ It's still randomly documented since it's just my working tool.
 * Redis addon (inspired by redis-objects): store and search relations, data-typing. (maybe I'll create another gem for that)
 
 ### CHANGES
+
+##### Version 1.4.0
+
+* Array
+* * Sacrificed cleanness of the instance_methods namespace for speed up of meta-iterators (methods like `sort_by_sum_counts(n)`), read comments in /enumerable/array_iterators.rb
+* * New behaviour can be turned off by Array.fallback_to_clean_iterators!
+* * #avg and #avg_by for empty array now return 0
+* Hash#method_missing
+* * Changed priority: first try to get value by symbol key, then by string key.
+* * Hash#<key>= stays the same: set value by string key. This behaviour should not be changed, since string keys definition may have been used somewhere.
+* Added Symbol#+, analogue of String#+
+* Moved /b.rb into /core since #b is proved usability through some years
+* Added AR::Base#with_same(<column_name>)
+* The gem is now producing in bundle style: added Gemfile, rmtools.gemspec, etc
+
+##### Version 1.3.3
+
+* Added to Array: #sort_along_by, #indices_map, #each_two
+* Enumerable#map_hash
+* Range
+* * Fixed #size for backward ranges
+* * Fixed #x? and #-@ for neighbor numbers and non-integers in general
+* * added XRange#x?
+* * aliased #x? as #intersects?
+* Class#__init__ accepts block, auto__init__ed Thread and Proc
 
 ##### Version 1.3.0
 

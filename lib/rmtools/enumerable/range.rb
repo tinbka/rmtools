@@ -5,6 +5,19 @@ end
 
 class Range
   
+  # -(1.0..2.0)
+  ### => XRange(-∞..1.0, 2.0..∞)
+  # BUT
+  # -(1..2)
+  ### => XRange(-∞..0, 3..∞)
+  # i.e. all excluding these: (0; 1], [1; 2], [2; 3)
+  def -@
+    self_begin = self.begin
+    self_begin -= 1 if Integer === self_begin
+    self_end = include_end.end
+    self_end += 1 if Integer === self_end
+    XRange(-Inf..self_begin, self_end..Inf)
+  end
   def &(range)
     return range&self if range.is XRange
     beg = [self.begin, range.begin].max
@@ -20,10 +33,16 @@ class Range
     [self.begin, range.begin].min..[self_.end, range.end].max
   end
   
-  def -@
-    XRange(-Inf..self.begin-1, include_end.end+1..Inf)
-  end
   
+  # On the basis of #-@ for non-integers,
+  # (0..1) - (1..2)
+  ### => XRange(0..0)
+  # (0..1.0) - (1..2)
+  ### => XRange(0..0)
+  # (0..1) - (1.0..2)
+  ### => XRange(0..1.0)
+  # (0..1.0) - (1.0..2)
+  ### => XRange(0..1.0)
   def -(range)
     self & -range
   end
@@ -33,15 +52,28 @@ class Range
     self - common | range - common
   end
   
+  # Statement about non-integers is made with presumption that float presentation of number is a neighborhood of it.
+  # Thus, "1.0" lies in the neighborhood of "1"; [0..1.0] is, mathematically, [0; 1) that not intersects with (1; 2]
+  # and thereby (0..1.0).x?(1.0..2) should be false, although (0..1).x?(1..2) should be true
   def x?(range)
+    return range.x? self if range.is XRange
     range_end = range.include_end.end
     self_end = self.include_end.end
     if self_end < range_end
-      self_end >= range.begin - (self_end.kinda Integer and range.begin.kinda Integer).to_i
+      if Integer === self_end and Integer === range.begin
+        self_end >= range.begin
+      else
+        self_end > range.begin
+      end
     else
-      range_end >= self.begin - (self.begin.kinda Integer and range_end.kinda Integer).to_i
+      if Integer === self.begin and Integer === range_end
+        range_end >= self.begin
+      else
+        range_end > self.begin
+      end
     end
   end
+  alias :intersects? :x?
     
   def <=>(range) 
     (self.begin <=> range.begin).b || self.include_end.end <=> range.include_end.end 
@@ -60,7 +92,12 @@ class Range
   end
   
   def size
-    last - first + (!exclude_end?).to_i 
+    (last - first).abs + (!exclude_end?).to_i 
+  end
+  
+  # Irrespective of include_end to be able to determne ranges created in any way
+  def b
+    self.begin != self.end && self
   end
   
   def div(n)
@@ -179,6 +216,11 @@ class XRange
     self - common | range - common
   end
   
+  def x?(range)
+    @ranges.any? {|r| range.x? r}
+  end
+  alias :intersects? :x?
+  
 private
   
   def intersect(range)
@@ -218,7 +260,11 @@ public
   end
   
   def size
-    @ranges.sum_size
+    @ranges.sum {|r| r.size}
+  end
+  
+  def b
+    size != 0 && self
   end
   
   def div(n)
