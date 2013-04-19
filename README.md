@@ -39,8 +39,9 @@ It's still randomly documented since it's just my working tool.
 * * Changed priority: first try to get value by symbol key, then by string key.
 * * Hash#<key>= stays the same: set value by string key. This behaviour should not be changed, since string keys definition may have been used somewhere.
 * Added Symbol#+, analogue of String#+
-* Moved /b.rb into /core since #b is proved usability through some years
 * Added AR::Base#with_same(<column_name>)
+* Fixed Kernel::require! (case with in-gem paths)
+* Moved /b.rb into /core since #b is proved usability through some years
 * The gem is now producing in bundle style: added Gemfile, rmtools.gemspec, etc
 
 ##### Version 1.3.3

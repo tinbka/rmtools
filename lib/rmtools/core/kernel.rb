@@ -3,9 +3,11 @@ module Kernel
   
   # re-require
   def require!(file)
-    ['.rb', '.so', '.dll', ''].each {|ext| $".delete "#{file}#{ext}"}
-    file = File.expand_path file
-    ['.rb', '.so', '.dll', ''].each {|ext| $".delete "#{file}#{ext}"}
+    [file, File.expand_path(file)].find {|path|
+      ['.rb', '.so', '.dll', ''].find {|ext| 
+        $".delete "#{file}#{ext}"
+      }
+    } || $".del_where {|path| path[%r{/#{file}(.rb|.so|.dll)?$}]}
     require file
   end
 
