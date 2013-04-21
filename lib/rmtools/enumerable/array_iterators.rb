@@ -231,10 +231,10 @@ class Array
       end"
       when :find_by, :select_by, :reject_by
         Array.class_eval "
-      def #{method}(*args)
+      def #{method}(val)
         # select_by_count(max_count) =>
         # select {|e| e.count == max_count}
-        #{iterator}(:#{meth}, *args)
+        #{iterator.to_s[0...-3]} {|e| e.#{meth} == val)
       rescue NoMethodError => err
         err.message << ' (`#{method}\\' interpreted as decorator-function `#{meth}\\')'
         raise err
