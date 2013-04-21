@@ -1,15 +1,13 @@
 # encoding: utf-8
 class Object
 
-  # &splitter must return a pair
-  def unfold(break_if=lambda{|x|x==0}, &splitter)
+  # @ breaker must be callable that returns true value if that's it
+  # @ &splitter must return a pair
+  def unfold(breaker=lambda{|x|x.b}, &splitter)
     obj, container = self, []
-    until begin
-        result = splitter[obj]
-        container.unshift result[1]
-        break_if[result[0]]
-      end
-      obj = result[0]
+    until breaker.call obj
+      obj, next_element = splitter[obj]
+      container.unshift next_element
     end
     container
   end
