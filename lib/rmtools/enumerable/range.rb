@@ -77,11 +77,12 @@ class Range
     self & -range
   end
   
+  alias :include_number? :include?
   # This function corresponds with ruby's default one in that we consider any number as a point on a segment.
   # Thus, any of these 0..1, 0..1.0
   # would return true as for 1 so as for 1.0
   def include?(number_or_range)
-    if Number === number_or_range
+    if Numeric === number_or_range
       include_number? number_or_range
     elsif XRange === number_or_range
       number_or_range.include? self
