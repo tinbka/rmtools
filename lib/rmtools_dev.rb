@@ -1,6 +1,2 @@
-SCRIPT_LINES__ = {} unless defined? SCRIPT_LINES__
-$__MAIN__ = self
+$stderr.puts 'require "rmtools_dev" is deprecated since 2.0.0. Please require "rmtools"'
 require 'rmtools'
-RMTools::require 'dev'
-
-unless defined? Rails; class Object; include RMTools end end

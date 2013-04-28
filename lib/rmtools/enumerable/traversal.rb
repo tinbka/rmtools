@@ -125,7 +125,7 @@ module RMTools
   
   class ValueTraversable < Array
     include ValueTraversal    
-    __init__ if respond_to? :__init__
+    __init__
     
     private
     alias :array_plus :+
@@ -145,7 +145,7 @@ module RMTools
   
   class KeyValueTraversable < Hash
     include KeyValueTraversal    
-    __init__ if respond_to? :__init__
+    __init__
     
     def +(enum)
       if Hash === enum

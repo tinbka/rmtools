@@ -18,24 +18,25 @@ class Array
   end
   
   def rand
-    if block_given?
-      h, ua = {}, uniq
-      s = ua.size
-      loop {
-        i = Kernel.rand size
-        if h[i]
-          return if h.size == s
-        elsif yield(e = ua[i])
-          return e
-        else h[i] = true
-        end
-      }
-    else self[Kernel.rand(size)]
-    end
+    self[Kernel.rand(size)]
   end
   
   def rand!
     delete_at Kernel.rand size
+  end
+  
+  def rand_by
+    set, ua = Set.new, uniq
+    s = ua.size
+    loop {
+      i = Kernel.rand size
+      if set.include? i
+        return if set.size == s
+      elsif yield(e = ua[i])
+        return e
+      else set << i
+      end
+    }
   end
   
   def randdiv(int)

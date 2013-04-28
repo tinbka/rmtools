@@ -7,11 +7,11 @@ Started from basic classes, now it contains low-level helpers for ActiveRecord a
 
 RMTools is based on an opinion that some boiler-plate should be thrown away from Ruby making it more expressive with almost no (<< 10%) performance penalty:
 
-`hash['id']` -> `hash.id`
+`hash[:id]` -> `hash.id`
 
 `ary.map(&:id)` -> `ary.ids`
 
-`ary.map {|h| h['id']}` -> `ary.ids`
+`ary.map {|h| h[:id]}` -> `ary.ids`
 
 `comments.posts.sorted_uniq_by_id.select_by_user_id(user_id).sum_points` -> `comments.map {|c| c.post}.sort_by {|p| p.id}.uniq_by {|p| p.id}.select {|p| p.user_id == user_id}.sum {|p| p.points}`
 
@@ -21,32 +21,58 @@ RMTools is based on an opinion that some boiler-plate should be thrown away from
 
 It's still randomly documented since it's just my working tool.
 
-#### Main goals for 2.0
+#### Wanted to implement
 
-* Ruby code parser (StringScanner-based) reading array of loaded ruby-files and making accurate hash-table of defined methods {"Class#method" => "def ... end"}
-* JSON-formatter for output ruby objects content in HTML form in order to inspect big objects using browser abilities
+* Set theory based Range extension with support of both begin and end exclusion, and satisfying the next rules:
+`(0..1).size = (0...1).size = 1
+A = A - B | B
+A ⊃ B -> (A - B).size = A.size - B.size`
+* Ruby code parser (StringScanner-based) reading an array of loaded ruby-files and making accurate hash-table of defined methods {"Class#method" => "def ... end"}
+* JSON-formatter for output ruby objects content in HTML presentation in order to inspect big objects using browser graphic abilities
+
 
 ### CHANGES
 
-##### Version 1.4.0
+##### Version 2.0.0
 
-* Array
-** Sacrificed a cleanness of the instance_methods namespace for a boost of meta-iterators (methods like `sort_by_sum_counts(n)`), read comments in /enumerable/array_iterators.rb
-** New behaviour can be turned off by Array.fallback_to_clean_iterators!
-** #avg and #avg_by for empty array now return 0
-* Hash#method_missing
-** Changed priority: first try to get value by a symbol key, then by a string key.
-** Hash#<key>= stays the same: set value by a string key. This behaviour should not be changed, since string keys definition may have allready been used somewhere.
-* Added Symbol#+, analogically of String#+
-* ActiveRecord
-** Added ::Base#with_same(<column_name>)
-** Moved declarative.rb from Rhack project. ::Base.declarative is the method of making tables like in migrations but on the fly
-* Fixed Kernel::require! (case with in-gem paths)
-* The gem structure:
-** Moved /b.rb into /core since #b is proved usability through some years
-** Renamed /db -> /active_record
-** Merged /ip into /conversions
-** The gem is now producing in the bundle style: added Gemfile, rmtools.gemspec, etc
+**Array Meta-iterators**
+* Pattern has became a class variable. New names can be added to pattern by Array.add_iterator_name
+* Speed has been drastically boosted by evaluating of every proper missing method. (Read comments in /enumerable/array_iterators.rb)
+* Using meta-iterators in the new behaviour can smudge Array instance_methods namespace. Although it's not something that bad, that's possible to turn on the old behaviour by Array.fallback_to_clean_iterators!
+
+**Hash#method_missing**
+* hash.something gets hash[:something] || hash['something'], not other way
+* hash.something= sets hash['something'] as did it before
+* This change has been caused by large amounts of symbolic options keys and json decode returning symbolic keys (at least with a yajl library).
+* Set behaviour, on the other hand, will not be changed since 1) it will be too hard to debug hashes in an old code; 2) it's not that frequently used; 3) setting hash key directly by a []= makes a code more clear
+
+**Array**
+* #avg and #avg_by for an empty array now return 0
+
+**Symbol**
+* Added #+, #split and #method_missing to proxy all possible methods to #to_s
+
+**Range**
+* Described concept of the extension (/enumerable/range.rb)
+* Changed default Range#include? the way it can take range as argument
+* Added XRange#first(count) and #last(count), analogically to Range#first and #last
+
+**ActiveRecord**
+* Moved declarative.rb from Rhack project. ::Base.declarative is a way of making tables like by migrations but on the fly
+* Added ::Base#with_same(<column_name>)
+* ::Base.non_null_scopes ignores non-nullable columns
+
+**Development kit**
+* RMTools.timer now resets $quiet and $log.mute_warn to previous values in case of ^C or another exception raised
+* Fixed all potential problems with /dev, so require "rmtools_dev" is deprecated in favour of require "rmtools" and will be removed in the next update
+* Read comments about format_trace in /dev/trace_format.rb
+* BlackHole class is aliased as Void
+
+**Structural changes**
+* Moved /b.rb into /core since #b is proved usability through some years
+* Renamed /db into /active_record
+* Merged /ip into /conversions
+* The gem is now being produced in the bundle style: added Gemfile, .gemspec, etc
 
 ##### Version 1.3.3
 

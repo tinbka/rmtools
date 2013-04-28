@@ -1,5 +1,6 @@
 # encoding: utf-8
-# js hash getter/setter and string concat logic
+
+# Javascript hash getter/setter and string concat logic
 class Hash
   alias :throw_no :method_missing
   
@@ -54,14 +55,6 @@ class String
     def <<(str)
       concat str.to_s
     end
-  end
-  
-end
-
-class Symbol
-  
-  def +(str)
-    to_s + str
   end
   
 end

@@ -3,7 +3,45 @@ unless defined? Inf
   Inf = 1.0/0
 end
 
+# Range in Ruby can have at least 2 meanings:
+# 1) interval of real numbers
+# (0...2).include? 1.6 # => true
+# 2) lazy list of array indices (included integers):
+# [0,1,2,3,4,5][1..4] # => [1, 2, 3, 4]
+#
+# There is some basic problems.
+# 1) For the first way of using, Range doesn't have Set operations. Further more Range can not be complex.
+# There is "intervals" gem that partially solves these problems, but it's arithmetic is not Set compatible:
+# -Interval[1,2] # => Interval[-2, -1]
+# 2) Hardly we can use Range second way, when it defined by a floating point numbers:
+# [0,1,2,3,4,5][1.9..4] # => [1, 2, 3, 4]
+# (1.9...4.1).include? 4 # => true, BUT
+# [0,1,2,3,4,5][1.9...4.1] # => [1, 2, 3]
+#
+# This extension does not solve both problems, because I wanted to save the usability of Range syntactic sugar. Though, I want to make new one that shall solve these.
+# So far, the present extension applies Set operations to ranges considered as lists of contained integers. 
+# It means: 
+# (x..y) equivalent (x...y+0.5) equivalent (x...y+1) equivalent [x, x+1, ..., y]
+# Note quantity of dots (end exclusion)
 class Range
+  
+  def include_end
+    exclude_end? ? first..(last.integer? ? last - 1 : last.to_i) : self 
+  end
+  
+  # (0..0).size # => 1 (equivalent list of one zero)
+  # (0...0).size # => 0 (equivalent empty list)
+  def size
+    (include_end.last - first).abs + 1
+  end
+  
+  def empty?
+    size == 0
+  end
+  
+  def b
+    size != 0 && self
+  end
   
   # -(1.0..2.0)
   ### => XRange(-∞..1.0, 2.0..∞)
@@ -18,21 +56,13 @@ class Range
     self_end += 1 if Integer === self_end
     XRange(-Inf..self_begin, self_end..Inf)
   end
+  
   def &(range)
     return range&self if range.is XRange
     beg = [self.begin, range.begin].max
     end_ = [self.include_end.end, range.include_end.end].min
     beg > end_ ? nil : beg..end_
   end
-  
-  def |(range)
-    return range|self if range.is XRange
-    range = range.include_end
-    self_ = self.include_end
-    return XRange.new self, range if !x?(range)
-    [self.begin, range.begin].min..[self_.end, range.end].max
-  end
-  
   
   # On the basis of #-@ for non-integers,
   # (0..1) - (1..2)
@@ -45,6 +75,27 @@ class Range
   ### => XRange(0..1.0)
   def -(range)
     self & -range
+  end
+  
+  # This function corresponds with ruby's default one in that we consider any number as a point on a segment.
+  # Thus, any of these 0..1, 0..1.0
+  # would return true as for 1 so as for 1.0
+  def include?(number_or_range)
+    if Number === number_or_range
+      include_number? number_or_range
+    elsif XRange === number_or_range
+      number_or_range.include? self
+    else
+      include_number? number_or_range.begin and include_number? number_or_range.end
+    end
+  end
+  
+  def |(range)
+    return range|self if range.is XRange
+    range = range.include_end
+    self_ = self.include_end
+    return XRange.new self, range if !x?(range)
+    [self.begin, range.begin].min..[self_.end, range.end].max
   end
   
   def ^(range)
@@ -79,25 +130,12 @@ class Range
     (self.begin <=> range.begin).b || self.include_end.end <=> range.include_end.end 
   end
   
-  def include_end
-    exclude_end? ? self.begin..(self.end - 1) : self 
-  end
-  
   def center
-    (first + last + (!exclude_end?).to_i)/2 
+    (first + include_end.last)/2 
   end
   
   def part(i, j) 
     first + (i-1)*size/j .. first - 1 + i*size/j unless i < 1 or j < 1 or j < i 
-  end
-  
-  def size
-    (last - first).abs + (!exclude_end?).to_i 
-  end
-  
-  # Irrespective of include_end to be able to determne ranges created in any way
-  def b
-    self.begin != self.end && self
   end
   
   def div(n)
@@ -141,7 +179,7 @@ class Range
     ie*(ie+1)/2 - (1..self.begin-1).sum
   end
   
-  # monotone function definition interval min/max border
+  # minimum of monotone function definition interval
   def min(&fun)
     return first if yield first
     return unless yield last
@@ -152,6 +190,7 @@ class Range
     end
   end 
   
+  # maximum of monotone function definition interval
   def max(&fun)
     return last if yield last
     return unless yield first
@@ -190,7 +229,7 @@ class XRange
     if range.is Range
       XRange.new *intersect(range)
     else
-      @ranges.map {|r| range & r}.foldl(:|)
+      @ranges.map {|r| range & r}.fold(:|)
     end
   end
   
@@ -204,7 +243,7 @@ class XRange
   end
   
   def -@
-    @ranges.map {|r| -r}.foldl(:&)
+    @ranges.map {|r| -r}.fold(:&)
   end
   
   def -(range)
@@ -240,31 +279,40 @@ public
   end
   
   def of(ary) 
-    @ranges.foldl(:+) {|r| ary[r]} 
-  end
-  
-  def empty?
-    @ranges.empty?
-  end
-  
-  def include?(number_or_range)
-    @ranges.find {|r| r.include?(number_or_range)}
-  end
-  
-  def begin
-    @ranges[0].begin
-  end
-  
-  def end
-    @ranges[-1].end
+    @ranges.sum_of(ary)
   end
   
   def size
-    @ranges.sum {|r| r.size}
+    @size ||= @ranges.sum_size
+  end
+  
+  def empty?
+    @empty ||= @ranges.any? {|r| !r.empty?}
   end
   
   def b
-    size != 0 && self
+    !empty? && self
+  end
+  
+  def include?(number_or_range)
+    @ranges.find_include?(number_or_range)
+  end
+  
+  def begin
+    @begin ||= @ranges.first && @ranges.first.begin
+  end
+  
+  def end
+    @end ||= @ranges.last && @ranges.last.end
+  end
+  
+  alias :to_a_first :first
+  def first(count=nil)
+    count ? to_a_first(count) : self.begin
+  end
+    
+  def last(count=nil)
+    count ? to_a.last(count) : self.end
   end
   
   def div(n)

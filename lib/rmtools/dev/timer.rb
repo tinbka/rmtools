@@ -7,7 +7,12 @@ module RMTools
     quiet, mute_warn = $quiet, $log.mute_warn
     $quiet = $log.mute_warn = true
     t1 = Time.now
-    timez.times {yield} if timez > 0
+    begin
+      timez.times {yield} if timez > 0
+    rescue
+      $quiet, $log.mute_warn = quiet, mute_warn
+      raise $!
+    end
     res = yield
     t2 = Time.now
     ts.times {}

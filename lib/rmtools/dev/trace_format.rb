@@ -1,6 +1,7 @@
 # encoding: utf-8
 RMTools::require 'dev/highlight'
 RMTools::require 'dev/logging'
+require 'active_support/core_ext/class/attribute'
 
 module RMTools
 
@@ -71,16 +72,46 @@ module RMTools
   module_function :format_trace, :format_trace_to_html
 end
 
-class Class
+# As for rmtools-1.1.0, 1.9.1 may hung up processing IO while generating traceback
+# As for 1.2.10 with 1.9.3 with readline support it isn't hung up anymore
+
+# Usage with Rails.
+# Rails raise and rescue a bunch of exceptions during a first load, a reload of code (e.g. in development env) and maybe even some exceptions for each request.
+# Thus, trace_format should be set only in a console environment *after* a code is loaded.
+# For a web-server environment use RMTools.format_trace for inspect backtrace *after* an exception was rescued.
+# Also note that Rails' autoreload of code won't rewrite SCRIPT_LINES__.
+class Exception
+  alias :set_bt :set_backtrace
+  class_attribute :trace_format
   
-private
-  def trace_format method
-    if Exception.in ancestors
-      class_attribute :__trace_format
-      self.__trace_format = method
-    else
-      raise NoMethodError, "undefined method `trace_format' for class #{self}"
+  # If you also set (e.g. in irbrc file) 
+  #   module Readline
+  #     alias :orig_readline :readline
+  #     def readline(*args)
+  #       ln = orig_readline(*args)
+  #       SCRIPT_LINES__['(irb)'] << "#{ln}\n"
+  #       ln
+  #     end
+  #   end
+  # it will be possible to fetch lines entered in IRB
+  # else format_trace would only read ordinally require'd files
+  def set_backtrace src
+    if format = self.class.trace_format
+      src = RMTools.__send__ format, src
     end
+    set_bt src
+  end
+end
+  
+# This is the most usable setting, I think. Set it in the irbrc, config/initializers or wherever
+<<-'example'
+if defined? IRB
+  class StandardError
+    self.trace_format = :format_trace
   end
   
+  class SystemStackError
+    self.trace_format = nil
+  end
 end
+example
