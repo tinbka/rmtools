@@ -52,13 +52,21 @@ module RMTools
     #console values:
     :caller => "#{@c.gray('%f:%l')} #{@c.red_bold(':%m')}", # "file:line :method", %p is for fullpath
     :format => "%time %mode [%caller]: %text" # format of entire log string, %mode is {#{%w(debug log info warn).map {|i| @highlight[i.to_sym]}*', '}}
-    :color_out => false # do not clean control characters that make output to file colorful; set to true makes more readable output of `tail' but hardly readable by gui file output
+    :color_out => false, # do not clean control characters that make output to file colorful; set to true makes more readable output of `tail' but hardly readable by gui file output
+    :detect_comments => false # highlight and strip comments blcoks
+    # detect comments allows comment blocks looking like:
+    $log<<<<-'#'
+    # ... comment string one ...
+    # ... comment string two ...
+    #
+    be logged like #{@c.green "\n... comment string one ...\n... comment string two ..."}
     #html options:
     :caller => "<a class='l'>%f:%l</a> <a class='m'>:%m</a>",
     :format => "<div class='line'><a class='t'>%time</a> <a class='%mode'>%mode</m> [%caller]: <p>%text</p>%att</div>", # %att is for array of objects that should be formatted by the next option
     :att =>"<div class='att'><div class='hide'>+</div><pre>%s</pre></div>", # .hide should be scripted to work like a spoiler
     :serializer => RMTools::RMLogger::HTML # should respond to :render(obj); nil value means each object will be just #inspect'ed}
     end
+    alias :usage :defaults
           
     # set any needed params, the rest will be set by default
     def set_format *args
@@ -95,6 +103,8 @@ module RMTools
         text = bind.report text
       elsif !text.is String
         text = text.inspect
+      elsif cfg.detect_comments and text =~ /\A[ \t]*#[ \t]+\S/
+        text = "\n" + @c.green(text.gsub(/^[ \t]*#[ \t]/, "").chop)
       end
       out = cfg.out
       if cfg._time or cfg.path_format

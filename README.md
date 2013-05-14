@@ -1,11 +1,11 @@
 ### RMTools
 [github](https://github.com/tinbka/rmtools)
 
-Collection of helpers for any need: strings, enumerables, Module... hundreds of bicycles and shortcuts you ever wanted to implement are here, optimized for performance.
-Small dev library (constantly in progress): fast and smart logger, binding explorer, backtrace formatter, all are console-colored.
+Collection of helpers for any need: strings, enumerables, modules... hundreds of bicycles and shortcuts you ever wanted to implement are here, optimized for performance.
+Small dev library (constantly in progress): fast and smart logger, binding explorer, backtrace formatter, each is console-colored.
 Started from basic classes, now it contains low-level helpers for ActiveRecord and makes LibXML more jQueryish.
 
-RMTools is based on an opinion that some boiler-plate should be thrown away from Ruby making it more expressive with almost no (<< 10%) performance penalty:
+RMTools helps to throw away some boiler-plate making a code more intuitive. It comes with almost no (<< 10%) performance penalty:
 
 `hash[:id]` -> `hash.id`
 
@@ -15,89 +15,89 @@ RMTools is based on an opinion that some boiler-plate should be thrown away from
 
 `comments.posts.sorted_uniq_by_id.select_by_user_id(user_id).sum_points` -> `comments.map {|c| c.post}.sort_by {|p| p.id}.uniq_by {|p| p.id}.select {|p| p.user_id == user_id}.sum {|p| p.points}`
 
-**Code less, do more!**
-
 ---
 
 It's still randomly documented since it's just my working tool.
 
 #### Wanted to implement
 
-* Set theory based Range extension with support of both begin and end exclusion, and satisfying the next rules:
-`(0..1).size = (0...1).size = 1
-A = A - B | B
-A ⊃ B -> (A - B).size = A.size - B.size`
 * Ruby code parser (StringScanner-based) reading an array of loaded ruby-files and making accurate hash-table of defined methods {"Class#method" => "def ... end"}
 * JSON-formatter for output ruby objects content in HTML presentation in order to inspect big objects using browser graphic abilities
+* Set theory based Range extension with support of both begin and end exclusion, and satisfying the next rules:
+  * `size(0..1) = size(0...1) = 1`
+  * `A = A - B | B`
+  *   `A ⊃ B -> size(A - B) = size(A) - size(B)`
 
 
 ### CHANGES
 
 ##### Version 2.0.0
 
-**Array Meta-iterators**
-* Pattern has became a class variable. New names can be added to pattern by Array.add_iterator_name
-* Speed has been drastically boosted by evaluating of every proper missing method. (Read comments in /enumerable/array_iterators.rb)
-* Using meta-iterators in the new behaviour can smudge Array instance_methods namespace. Although it's not something that bad, that's possible to turn on the old behaviour by Array.fallback_to_clean_iterators!
+* Array Meta-iterators
+  * Pattern has became a class variable. New names can be added to pattern by Array::add_iterator_name
+  * Speed has been drastically boosted by evaluating of every proper missing method. (Read comments in /enumerable/array_iterators.rb)
+  * Using meta-iterators in the new behaviour can smudge Array instance_methods namespace. Although it's not something that bad, that's possible to turn on the old behaviour by Array::fallback_to_clean_iterators!
 
-**Hash#method_missing**
-* hash.something gets hash[:something] || hash['something'], not other way
-* hash.something= sets hash['something'] as did it before
-* This change has been caused by large amounts of symbolic options keys and json decode returning symbolic keys (at least with a yajl library).
-* Set behaviour, on the other hand, will not be changed since 1) it will be too hard to debug hashes in an old code; 2) it's not that frequently used; 3) setting hash key directly by a []= makes a code more clear
+* Hash#method_missing
+  * hash.something gets hash[:something] || hash['something'], not other way
+  * hash.something= sets hash['something'] as did it before
+  * This change has been caused by large amounts of symbolic options keys and json decode returning symbolic keys (at least with a yajl library).
+  * Set behaviour, on the other hand, will not be changed since 1) it will be too hard to debug hashes in an old code; 2) it's not that frequently used; 3) setting hash key directly by :[]= makes a code clearer
 
-**Array**
-* #avg and #avg_by for an empty array now return 0
+* Array
+  * #avg and #avg_by for an empty array now return 0
+  * Added #intersects? aliased as #x?
 
-**Symbol**
-* Added #+, #split and #method_missing to proxy all possible methods to #to_s
+* Symbol
+  * Added #+, #split and #method_missing to proxy all possible methods to #to_s
 
-**Range**
-* Described concept of the extension (/enumerable/range.rb)
-* Changed default Range#include? the way it can take range as argument
-* Added XRange#first(count) and #last(count), analogically to Range#first and #last
+* Range
+  * Described concept of the extension (/enumerable/range.rb)
+  * Changed default Range#include? the way it can take range as argument
+  * Added XRange#first(count) and #last(count), analogically to Range#first and #last
 
-**ActiveRecord**
-* Moved declarative.rb from Rhack project. ::Base.declarative is a way of making tables like by migrations but on the fly
-* Added ::Base#with_same(<column_name>)
-* ::Base.non_null_scopes ignores non-nullable columns
+* ActiveRecord
+  * Moved declarative.rb from Rhack project. ::Base::declarative is a way of making tables like by migrations but on the fly
+  * Added ::Base#with_same(<column_name>)
+  * ::Base::non_null_scopes ignores non-nullable columns
 
-**Development kit**
-* RMTools.timer now resets $quiet and $log.mute_warn to previous values in case of ^C or another exception raised
-* Fixed all potential problems with /dev, so require "rmtools_dev" is deprecated in favour of require "rmtools" and will be removed in the next update
-* Read comments about format_trace in /dev/trace_format.rb
-* BlackHole class is aliased as Void
+* Development kit
+  * RMTools::timer now resets $quiet and $log.mute_warn to previous values in case of ^C or another exception raised
+  * Fixed all potential problems with /dev, so require "rmtools_dev" is deprecated in favour of require "rmtools" and will be removed in the next update
+  * Read comments about format_trace in /dev/trace_format.rb
+  * BlackHole class is aliased as Void
+  * ::RMLogger gets :detect_comments option for automatic highlightng of comment blocks get logged
 
-**Structural changes**
-* Moved /b.rb into /core since #b is proved usability through some years
-* Renamed /db into /active_record
-* Merged /ip into /conversions
-* The gem is now being produced in the bundle style: added Gemfile, .gemspec, etc
+* Structural changes
+  * Moved /b.rb into /core since #b is proved usability through some years
+  * Renamed /db into /active_record
+  * Merged /ip into /conversions
+  * The gem is now being produced in the bundle style: added Gemfile, .gemspec, etc
 
 ##### Version 1.3.3
 
 * Added to Array: #sort_along_by, #indices_map, #each_two
-* Enumerable#map_hash
+* Added Enumerable#map_hash
 * Range
-* * Fixed #size for backward ranges
-* * Fixed #x? and #-@ for neighbor numbers and non-integers in general
-* * added XRange#x?
-* * aliased #x? as #intersects?
+  * Fixed #size for backward ranges
+  * Fixed #x? and #-@ for neighbor numbers and non-integers in general
+  * added XRange#x?
+  * aliased #x? as #intersects?
 * Class#__init__ accepts block, auto__init__ed Thread and Proc
 
 ##### Version 1.3.0
 
 * Added ::ValueTraversal and ::KeyValueTraversal modules for treeish dir/enumerable search
 * String
-* * Cyrillic support: #fupcase, #fdowncase and instant up/down versions
-* * #to_search, #squeeze_newlines, #recordize
-* * key :js_caller to #parse for JS stacktrace lines as it given by stacktrace.js library
-* Added AR::Base::boolean_scopes! and ::non_null_scopes!
+  * Cyrillic support: #fupcase, #fdowncase and instant up/down versions
+  * #to_search, #squeeze_newlines, #recordize
+  * key :js_caller to #parse for JS stacktrace lines as it given by stacktrace.js library
+* Added ActiveRecord::Base::boolean_scopes! and ::non_null_scopes!
 * Added Object#ifndef for ivars caching
 * Fixed bugs
-* * Class#__init__ (case with nested classes)
-* * AR::Base::select_rand (case with :where query)
-* * ::rw and ::write (cases with encoding fail and non-string argument)
+  * Class#__init__ (case with nested classes)
+  * ActiveRecord::Base::select_rand (case with :where query)
+  * ::rw and ::write (cases with encoding fail and non-string argument)
 * Described the library and *marked down* this readme
 
 ##### Version 1.2.14

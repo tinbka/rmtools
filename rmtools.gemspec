@@ -9,8 +9,8 @@ Gem::Specification.new do |spec|
   spec.version       = RMTools::VERSION
   spec.authors       = ["Sergey Baev"]
   spec.email         = ["tinbka@gmail.com"]
-  spec.description   = %q{RMTools is applied library made primarily for debug and text/arrays/files processing}
-  spec.summary       = %q{Code less, do more!}
+  spec.description   = %q{RMTools is a collection of helpers for debug, text/array/file processing and simply easing a coding process}
+  spec.summary       = %q{Collection of helpers for debug, text/array/file processing and simply easing a coding process}
   spec.homepage      = "https://github.com/tinbka/rmtools"
   spec.license       = "MIT"
 

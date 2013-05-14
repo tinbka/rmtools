@@ -61,6 +61,11 @@ class Array
   end
   
   alias diff ^
+  
+  def intersects?(ary)
+    (self & ary).any?
+  end
+  alias :x? :intersects?
 
   # arithmetics
   def avg

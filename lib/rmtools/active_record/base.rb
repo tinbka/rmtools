@@ -18,6 +18,7 @@ module ActiveRecord
   end
 
   class Base
+    class_attribute :enums
     
     class << self
     
@@ -87,7 +88,6 @@ module ActiveRecord
           ) i", options])
       end
         
-      class_attribute :enums
       # virtual (only-in-ruby) "enum" type support
       def enum hash
         key = hash.keys.first
