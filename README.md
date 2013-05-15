@@ -3,17 +3,13 @@
 
 Collection of helpers for any need: strings, enumerables, modules... hundreds of bicycles and shortcuts you ever wanted to implement are here, optimized for performance.
 Small dev library (constantly in progress): fast and smart logger, binding explorer, backtrace formatter, each is console-colored.
-Started from basic classes, now it contains low-level helpers for ActiveRecord and makes LibXML more jQueryish.
+Started from basic classes, now it contains low-level helpers for ActiveRecord and makes LibXML more jqueryish.
 
 RMTools helps to throw away some boiler-plate making a code more intuitive. It comes with almost no (<< 10%) performance penalty:
-
-`hash[:id]` -> `hash.id`
-
-`ary.map(&:id)` -> `ary.ids`
-
-`ary.map {|h| h[:id]}` -> `ary.ids`
-
-`comments.posts.sorted_uniq_by_id.select_by_user_id(user_id).sum_points` -> `comments.map {|c| c.post}.sort_by {|p| p.id}.uniq_by {|p| p.id}.select {|p| p.user_id == user_id}.sum {|p| p.points}`
+* `hash[:id]` -> `hash.id`
+* `ary.map(&:id)` -> `ary.ids`
+* `ary.map {|h| h[:id]}` -> `ary.ids`
+* `comments.posts.sorted_uniq_by_id.select_by_user_id(user_id).sum_points` -> `comments.map {|c| c.post}.sort_by {|p| p.id}.uniq_by {|p| p.id}.select {|p| p.user_id == user_id}.sum {|p| p.points}`
 
 ---
 

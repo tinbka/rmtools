@@ -227,35 +227,35 @@ class Array
       
       case iterator
       when :sum, :sort_along_by
-        Array.class_eval "
+        Array.class_eval %{
       def #{method}(*args, &block)
         # sum_posts_ids([], :all) =>
         # sum([]) {|e| e.posts_ids(:all)}
         #{iterator}(args.shift) {|e| e.#{meth}(*args, &block)}
       rescue NoMethodError => err
-        err.message << ' (`#{method}\\' interpreted as decorator-function `#{meth}\\')'
+        err.message << " (`#{method}' interpreted as decorator-function `#{meth}')"
         raise err
-      end"
+      end}
       when :find_by, :select_by, :reject_by
-        Array.class_eval "
+        Array.class_eval %{
       def #{method}(val)
         # select_by_count(max_count) =>
         # select {|e| e.count == max_count}
-        #{iterator.to_s[0...-3]} {|e| e.#{meth} == val)
+        #{iterator.to_s[0...-3]} {|e| e.#{meth} == val}
       rescue NoMethodError => err
-        err.message << ' (`#{method}\\' interpreted as decorator-function `#{meth}\\')'
+        err.message << " (`#{method}' interpreted as decorator-function `#{meth}')"
         raise err
-      end"
-      else 
-        Array.class_eval "
+      end}
+      else
+        Array.class_eval %{
       def #{method}(*args, &block)
         # uniq_by_sum(1) {|i| 1 / i.weight}  =>  
         # uniq_by {|e| e.sum(1) {|i| 1 / i .weight}}
         #{iterator} {|e| e.#{meth}(*args, &block)}
       rescue NoMethodError => err
-        err.message << ' (`#{method}\\' interpreted as decorator-function `#{meth}\\')'
+        err.message << " (`#{method}' interpreted as decorator-function `#{meth}')"
         raise err
-      end"
+      end}
       end
       
     elsif meth.sub!(/sses([=!?]?)$/, 'ss\1') or meth.sub!(/ies([=!?]?)$/, 'y\1') or meth.sub!(/s([=!?]?)$/, '\1')
@@ -263,7 +263,7 @@ class Array
       meth = meth.to_sym
       
       if assignment
-        Array.class_eval "
+        Array.class_eval %{
       def #{method}(value)
         if Array === value
           # owner_ids = users_ids  =>  
@@ -275,19 +275,19 @@ class Array
           each {|e| e.__send__ meth, value}
         end
       rescue NoMethodError => err
-        err.message << ' (`#{method}\\' interpreted as map-function `#{meth}\\')'
+        err.message << " (`#{method}' interpreted as map-function `#{meth}')"
         raise err
-      end"
+      end}
       else
-        Array.class_eval "
+        Array.class_eval %{
       def #{method}(*args, &block)
         # to_is(16)  =>  
         # map {|e| e.to_i(16)}
         map {|e| e.#{meth}(*args, &block)}
       rescue NoMethodError => err
-        err.message << ' (`#{method}\\' interpreted as map-function `#{meth}\\')'
+        err.message << " (`#{method}' interpreted as map-function `#{meth}')"
         raise err
-      end"
+      end}
       end
       
     else 

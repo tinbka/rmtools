@@ -124,7 +124,7 @@ module ActiveRecord
             scope col, where("#{quoted_table_name}.#{col} is not null")
           end
         }
-        rescue
+      rescue
         nil
       end
    
