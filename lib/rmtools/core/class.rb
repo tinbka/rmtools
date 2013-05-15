@@ -51,6 +51,13 @@ class Class
     end
   end 
   
+  def alias_constant(name)
+    class_eval %{
+    def #{name}(key=nil)
+      key ? self.class::#{name}[key] : self.class::#{name}
+    end}
+  end
+  
 end
 
 require 'set'

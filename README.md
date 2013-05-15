@@ -39,6 +39,9 @@ It's still randomly documented since it's just my working tool.
   * hash.something= sets hash['something'] as did it before
   * This change has been caused by large amounts of symbolic options keys and json decode returning symbolic keys (at least with a yajl library).
   * Set behaviour, on the other hand, will not be changed since 1) it will be too hard to debug hashes in an old code; 2) it's not that frequently used; 3) setting hash key directly by :[]= makes a code clearer
+  
+* Class
+  * Added private #alias_constant
 
 * Array
   * #avg and #avg_by for an empty array now return 0
