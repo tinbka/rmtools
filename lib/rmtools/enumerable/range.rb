@@ -230,7 +230,7 @@ class XRange
     if range.is Range
       XRange.new *intersect(range)
     else
-      @ranges.map {|r| range & r}.fold(:|)
+      @ranges.map {|r| range & r}.foldl(:|) || XRange.new
     end
   end
   
@@ -244,7 +244,7 @@ class XRange
   end
   
   def -@
-    @ranges.map {|r| -r}.fold(:&)
+    @ranges.map {|r| -r}.foldl(:&) || XRange.new(-Inf..+Inf)
   end
   
   def -(range)
