@@ -34,6 +34,8 @@ module RMTools
       file.print = !format.q
       file.out = format.out || format.log_file
       file.color_out = format.color_out || format.color_log
+      file.detect_comments = !!format.detect_comments
+      file.precede_comments = format.precede_comments || "# "
                 
       file.path_format = '%'.in file.out if file.out
       file.tf   = format.time.to_a
@@ -44,23 +46,24 @@ module RMTools
     end
           
     def defaults
-      puts %{    #common options:
+      puts %{    # #{@c.y 'common options:'}
     :q => false,   # not print
     :out => false, # output to file, may contain strftime's %H%M%Y etc for filename
     :time => ["%H:%M:%S", "%03d"], # strftime, [msecs]
     :type => :console, # or :html
-    #console values:
+    # #{@c.y 'console values:'}
     :caller => "#{@c.gray('%f:%l')} #{@c.red_bold(':%m')}", # "file:line :method", %p is for fullpath
     :format => "%time %mode [%caller]: %text" # format of entire log string, %mode is {#{%w(debug log info warn).map {|i| @highlight[i.to_sym]}*', '}}
     :color_out => false, # do not clean control characters that make output to file colorful; set to true makes more readable output of `tail' but hardly readable by gui file output
-    :detect_comments => false # highlight and strip comments blcoks
-    # detect comments allows comment blocks looking like:
+    :detect_comments => false, # highlight and strip comments blocks
+    :precede_comments => "# ",
+    # :detect_comments with default :precede_comments allows comment blocks looking like:
     $log<<<<-'#'
     # ... comment string one ...
     # ... comment string two ...
     #
-    be logged like #{@c.green "\n... comment string one ...\n... comment string two ..."}
-    #html options:
+    be logged like #{@c.green "\n# ... comment string one ...\n# ... comment string two ..."}
+    # #{@c.y 'html options:'}
     :caller => "<a class='l'>%f:%l</a> <a class='m'>:%m</a>",
     :format => "<div class='line'><a class='t'>%time</a> <a class='%mode'>%mode</m> [%caller]: <p>%text</p>%att</div>", # %att is for array of objects that should be formatted by the next option
     :att =>"<div class='att'><div class='hide'>+</div><pre>%s</pre></div>", # .hide should be scripted to work like a spoiler
@@ -104,7 +107,7 @@ module RMTools
       elsif !text.is String
         text = text.inspect
       elsif cfg.detect_comments and text =~ /\A[ \t]*#[ \t]+\S/
-        text = "\n" + @c.green(text.gsub(/^[ \t]*#[ \t]/, "").chop)
+        text = "\n" + @c.green(text.gsub(/^([ \t]*#[ \t])?/, cfg.precede_comments).chop)
       end
       out = cfg.out
       if cfg._time or cfg.path_format

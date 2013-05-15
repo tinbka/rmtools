@@ -65,7 +65,7 @@ It's still randomly documented since it's just my working tool.
   * Fixed all potential problems with /dev, so require "rmtools_dev" is deprecated in favour of require "rmtools" and will be removed in the next update
   * Read comments about format_trace in /dev/trace_format.rb
   * BlackHole class is aliased as Void
-  * ::RMLogger gets :detect_comments option for automatic highlightng of comment blocks get logged
+  * Added :detect_comments and :precede_comments options to ::RMLogger to automatically highlight comment blocks get logged
 
 * Structural changes
   * Moved /b.rb into /core since #b is proved usability through some years
