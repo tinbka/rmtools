@@ -29,18 +29,20 @@ class Range
     exclude_end? ? first..(last.integer? ? last - 1 : last.to_i) : self 
   end
   
+  # Since it's not represent an interval...
   # (0..0).size # => 1 (equivalent list of one zero)
   # (0...0).size # => 0 (equivalent empty list)
+  # There is no empty ranges with end included (since it includes at least an end, right?)
   def size
-    (include_end.last - first).abs + 1
+    exclude_end? ? (last - first).abs : (last - first).abs+1
   end
   
   def empty?
-    size == 0
+    exclude_end? && last == first
   end
   
   def b
-    size != 0 && self
+    !empty? && self
   end
   
   # -(1.0..2.0)
@@ -287,12 +289,13 @@ public
     @size ||= @ranges.sum_size
   end
   
+  # XRange doesn't support ranges with end excluded, so it's empty only if contains nothing
   def empty?
-    @empty ||= @ranges.any? {|r| !r.empty?}
+    @ranges.empty?
   end
   
   def b
-    !empty? && self
+    !@ranges.empty? && self
   end
   
   def include?(number_or_range)
