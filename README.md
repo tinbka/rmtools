@@ -45,6 +45,7 @@ It's still randomly documented since it's just my working tool.
 
 * Array
   * #avg and #avg_by for an empty array now return 0
+  * Fixed #rand_by for an empty array
   * Added #intersects? aliased as #x?
 
 * Symbol

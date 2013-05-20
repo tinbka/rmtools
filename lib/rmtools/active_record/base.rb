@@ -119,7 +119,7 @@ module ActiveRecord
       # including zero and empty string
       def non_null_scopes!
         boolean_scopes!
-        columns.reject_null.names.to_syms.each {|col|
+        columns.select_null.names.to_syms.each {|col|
           unless respond_to? col
             scope col, where("#{quoted_table_name}.#{col} is not null")
           end

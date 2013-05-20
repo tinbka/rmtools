@@ -26,6 +26,7 @@ class Array
   end
   
   def rand_by
+    return if empty?
     set, ua = Set.new, uniq
     s = ua.size
     loop {
