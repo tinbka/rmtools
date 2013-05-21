@@ -12,21 +12,26 @@ end
 # There is some basic problems.
 # 1) For the first way of using, Range doesn't have Set operations. Further more Range can not be complex.
 # There is "intervals" gem that partially solves these problems, but it's arithmetic is not Set compatible:
-# -Interval[1,2] # => Interval[-2, -1]
-# 2) Hardly we can use Range second way, when it defined by a floating point numbers:
+# -Interval[1,2] # => Interval[-2, -1] 
+# instead of 
+# # => Interval[[-Inf, -2], [-1, +Inf]]
+# 2) Hardly we can use Range second way, when it defined by non-integers:
 # [0,1,2,3,4,5][1.9..4] # => [1, 2, 3, 4]
 # (1.9...4.1).include? 4 # => true, BUT
 # [0,1,2,3,4,5][1.9...4.1] # => [1, 2, 3]
 #
-# This extension does not solve both problems, because I wanted to save the usability of Range syntactic sugar. Though, I want to make new one that shall solve these.
-# So far, the present extension applies Set operations to ranges considered as lists of contained integers. 
+# This extension leaves the first problem for a purpose of solving the second, saving the capability of a Range syntactic sugar. The present extension applies Set operations to ranges considered as lists of contained integers. 
 # It means: 
 # (x..y) equivalent (x...y+0.5) equivalent (x...y+1) equivalent [x, x+1, ..., y]
 # Note quantity of dots (end exclusion)
 class Range
   
+  def included_end
+    exclude_end? ? last.integer? ? last - 1 : last.to_i : last
+  end
+  
   def include_end
-    exclude_end? ? first..(last.integer? ? last - 1 : last.to_i) : self 
+    exclude_end? ? first..included_end : self 
   end
   
   # Since it's not represent an interval...
@@ -45,36 +50,31 @@ class Range
     !empty? && self
   end
   
-  # -(1.0..2.0)
-  ### => XRange(-∞..1.0, 2.0..∞)
-  # BUT
-  # -(1..2)
+  # Let significant content of a range used this way be:
+  def integers
+    (first.ceil..included_end).to_a
+  end
+  alias :to_is :integers
+  
+  # -(1..2)   
+  # -(0.5..2.1)
+  # i.e. all excluding these lazy indices: [1, 2]
   ### => XRange(-∞..0, 3..∞)
-  # i.e. all excluding these: (0; 1], [1; 2], [2; 3)
   def -@
-    self_begin = self.begin
-    self_begin -= 1 if Integer === self_begin
-    self_end = include_end.end
-    self_end += 1 if Integer === self_end
-    XRange(-Inf..self_begin, self_end..Inf)
+    XRange(-Inf..first.ceil-1, (exclude_end? && last.integer? ? last : last.to_i+1)..Inf)
   end
   
   def &(range)
-    return range&self if range.is XRange
-    beg = [self.begin, range.begin].max
-    end_ = [self.include_end.end, range.include_end.end].min
-    beg > end_ ? nil : beg..end_
+    return range & self if range.is XRange
+    fst = [first, range.first].max
+    lst = [included_end, range.included_end].min
+    fst > lst ? nil : fst..lst
   end
   
   # On the basis of #-@ for non-integers,
-  # (0..1) - (1..2)
-  ### => XRange(0..0)
-  # (0..1.0) - (1..2)
-  ### => XRange(0..0)
-  # (0..1) - (1.0..2)
-  ### => XRange(0..1.0)
-  # (0..1.0) - (1.0..2)
-  ### => XRange(0..1.0)
+  # (0..3) - (0.5..2.1)
+  # (0..3) - (1..2)
+  ### => XRange(0..0, 3..3.0)
   def -(range)
     self & -range
   end
@@ -89,12 +89,34 @@ class Range
     elsif XRange === number_or_range
       number_or_range.include? self
     else
-      include_number? number_or_range.begin and include_number? number_or_range.end
+      include_number? number_or_range.first and include_number? number_or_range.last
     end
   end
   
+  def x?(range)
+    return false if empty?
+    return range.x? self if range.is XRange
+    range_end = range.included_end
+    if range_end < range.first
+      return x?(range_end..range.first)
+    end
+    self_end = included_end
+    if self_end < first
+      return (first..self_end).x?(range)
+    end
+    case self_end <=> range_end
+    when -1
+      self_end >= range.first
+    when 1
+      first <= range_end >= first
+    else
+      true
+    end
+  end
+  alias :intersects? :x?
+  
   def |(range)
-    return range|self if range.is XRange
+    return range | self if range.is XRange
     range = range.include_end
     self_ = self.include_end
     return XRange.new self, range if !x?(range)
@@ -105,32 +127,9 @@ class Range
     common = self & range
     self - common | range - common
   end
-  
-  # Statement about non-integers is made with presumption that float presentation of number is a neighborhood of it.
-  # Thus, "1.0" lies in the neighborhood of "1"; [0..1.0] is, mathematically, [0; 1) that not intersects with (1; 2]
-  # and thereby (0..1.0).x?(1.0..2) should be false, although (0..1).x?(1..2) should be true
-  def x?(range)
-    return range.x? self if range.is XRange
-    range_end = range.include_end.end
-    self_end = self.include_end.end
-    if self_end < range_end
-      if Integer === self_end and Integer === range.begin
-        self_end >= range.begin
-      else
-        self_end > range.begin
-      end
-    else
-      if Integer === self.begin and Integer === range_end
-        range_end >= self.begin
-      else
-        range_end > self.begin
-      end
-    end
-  end
-  alias :intersects? :x?
     
   def <=>(range) 
-    (self.begin <=> range.begin).b || self.include_end.end <=> range.include_end.end 
+    (first <=> range.first).b || included_end <=> range.included_end
   end
   
   def center

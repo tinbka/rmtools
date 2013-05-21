@@ -52,7 +52,7 @@ It's still randomly documented since it's just my working tool.
   * Added #+, #split and #method_missing to proxy all possible methods to #to_s
 
 * Range
-  * Described concept of the extension (/enumerable/range.rb)
+  * Specified a concept of the extension (/enumerable/range.rb)
   * Changed default Range#include? the way it can take range as argument
   * Added XRange#first(count) and #last(count), analogically to Range#first and #last
 
