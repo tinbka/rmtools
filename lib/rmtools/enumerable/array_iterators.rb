@@ -268,11 +268,11 @@ class Array
         if Array === value
           # owner_ids = users_ids  =>  
           # each_with_index {|e, i| e.owner_id = users_ids[i]}
-          each_with_index {|e, i| e.__send__ meth, value[i]}
+          each_with_index {|e, i| e.#{meth} value[i]}
         else
           # owner_ids = user_id  =>  
           # each {|e, i| e.owner_id = user_id}
-          each {|e| e.__send__ meth, value}
+          each {|e| e.#{meth} value}
         end
       rescue NoMethodError => err
         err.message << " (`#{method}' interpreted as map-function `#{meth}')"

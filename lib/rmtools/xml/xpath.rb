@@ -19,11 +19,11 @@ module LibXML
         x.gsub! %r{(^|/)([^.#\w*/'"])}, '\1*\2'
         x.gsub! %r{\[([a-z]+)}, '[@\1'
         x.gsub! %r{(\[(?:@\w+!?=)?)['"]?([^'"\]@]+)['"]?\]}, '\1"\2"]'
-        if x !~%r{^(#{
-                        }(\./|\.//|/|//)?#{
-                        }(\w+:)?(\w+|\*)#{                         #  [ns:]name
-                        }(\[(@\w+(!?="[^"]+")?|"[^"]+")\])*#{#  attributes [@href!="pics/xynta.jpeg"]
-                        }(\[-?\d+\]|\{[^\}]+\})?#{               #  inruby-filters (see finder functions ^)
+        if x !~%r{^(?:#{
+                        }(?:\./|\.//|/|//)?#{
+                        }(?:(?:[\w\-]+:)?[\w\-]+|\*)#{                         #  [ns:]name
+                        }(?:\[(?:@\w+(!?="[^"]+")?|"[^"]+")\])*#{#  attributes [@href!="pics/xynta.jpeg"]
+                        }(?:\[-?\d+\]|\{[^\}]+\})?#{               #  inruby-filters (see finder functions ^)
                         })+$}
           raise XML::Error, "can't process `#{xpath}`; #{x}" 
         end
