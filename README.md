@@ -44,8 +44,7 @@ It's still randomly documented since it's just my working tool.
   * Added private #alias_constant
 
 * Array
-  * #avg and #avg_by for an empty array now return 0
-  * Fixed #rand_by for an empty array
+  * Fixed #avg, #avg_by, #rand_by in case of an empty array: return nil
   * Added #intersects? aliased as #x?
 
 * Symbol

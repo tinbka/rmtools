@@ -69,12 +69,12 @@ class Array
 
   # arithmetics
   def avg
-    empty? ? 0 : sum.to_f/size
+    empty? ? nil : sum.to_f/size
   end
   
   # for use with iterators
-  def avg_by(&b)
-    empty? ? 0 : sum(&b).to_f/size
+  def avg_by(&block)
+    empty? ? nil : sum(&block).to_f/size
   end
   
   def scale(top)
