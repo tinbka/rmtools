@@ -17,53 +17,89 @@ end
 # # => Interval[[-Inf, -2], [-1, +Inf]]
 # 2) Hardly we can use Range second way, when it defined by non-integers:
 # [0,1,2,3,4,5][1.9..4] # => [1, 2, 3, 4]
-# (1.9...4.1).include? 4 # => true, BUT
+# (1.9...4.1).include? 4 # => true, AND
+# (1.9...4.1).include? 1 # => false, BUT
 # [0,1,2,3,4,5][1.9...4.1] # => [1, 2, 3]
 #
-# This extension leaves the first problem for a purpose of solving the second, saving the capability of a Range syntactic sugar. The present extension applies Set operations to ranges considered as lists of contained integers. 
-# It means: 
-# (x..y) equivalent (x...y+0.5) equivalent (x...y+1) equivalent [x, x+1, ..., y]
-# Note quantity of dots (end exclusion)
+# A domain of the present extension is Set operations with ranges considered as lazy lists of integers.
+# The present extension is solving the second problem, yet
+# * saving the capability of a Range syntactic sugar;
+# * does exactly extend and not modify the Range behaviour.
 class Range
   
-  def included_end
-    exclude_end? ? last.integer? ? last - 1 : last.to_i : last
+  private
+  def next_int(n)
+    n.integer? || n.to_i == n ? n.to_i + 1 : n.ceil
   end
   
+  def prev_int(n)
+    n.integer? || n.to_i == n ? n.to_i - 1 : n.to_i
+  end
+  
+  def int_end
+    exclude_end? ? prev_int(last) : last.to_i
+  end
+  public
+  
+  # End inclusion need to universalize ranges for use in XRange list.
+  # Considering the extension domain, one simply should not use "..." notation, but if such a range nevertheless appears as an argument, we reduce that to an operable one at the cost of a fractional accuracy
+  # #include_end should not be coupled with #size and #empty? which have their own "..." handling
+  # (0.9...1.3).include_end # => 0.9..1, BUT
+  # (0.3...0.5).include_end # => 0.3..0
   def include_end
-    exclude_end? ? first..included_end : self 
+    exclude_end? ? first..prev_int(last) : self
   end
   
-  # Since it's not represent an interval...
-  # (0..0).size # => 1 (equivalent list of one zero)
-  # (0...0).size # => 0 (equivalent empty list)
-  # There is no empty ranges with end included (since it includes at least an end, right?)
+  def included_end
+    exclude_end? ? prev_int(last) : last
+  end
+  
+  # Represent a count of integers that range include and not real interval length
+  # (0..0).size
+  # => 1 (equivalent list of one 0)
+  # (0...0).size 
+  # => 0 (equivalent empty list)
+  # (0.3..0.5).size 
+  # => 0 (there is no integer between 0.3 and 0.5)
+  # (0.9...1.1).size 
+  # => 1 (equivalent list of one 1 which is between 0.9 and 1.1)
+  # (2..1).size 
+  # => -2 (hardly it has some sense, though hardly such a range can appear)
   def size
-    exclude_end? ? (last - first).abs : (last - first).abs+1
+    int_end - first.ceil + 1
   end
   
+  # Include any integer?
   def empty?
-    exclude_end? && last == first
+    size == 0
   end
   
   def b
-    !empty? && self
+    size != 0 && self
   end
   
-  # Let significant content of a range used this way be:
+  # Simplify a range to in-domain equivalent with integer edges.
+  def integerize
+    first.ceil..int_end
+  end
+  
+  # Significant content of a range then.
   def integers
-    (first.ceil..included_end).to_a
+    integerize.to_a
   end
   alias :to_is :integers
   
+  # Unfortunately, Range's start point can not be excluded, thus there is no *true inversion* of a range with included end.
+  # Though, is this domain we can "integerize" range, then
   # -(1..2)   
   # -(0.5..2.1)
-  # i.e. all excluding these lazy indices: [1, 2]
-  ### => XRange(-∞..0, 3..∞)
+  # (i.e. all excluding these indices: [1, 2])
+  ### => XRange(-∞..0, 3..+∞)
   def -@
-    XRange(-Inf..first.ceil-1, (exclude_end? && last.integer? ? last : last.to_i+1)..Inf)
+    XRange(-Inf..prev_int(first), (exclude_end? ? last.ceil : next_int(last))..Inf)
   end
   
+  # Intersection
   def &(range)
     return range & self if range.is XRange
     fst = [first, range.first].max
@@ -80,9 +116,12 @@ class Range
   end
   
   alias :include_number? :include?
-  # This function corresponds with ruby's default one in that we consider any number as a point on a segment.
-  # Thus, any of these 0..1, 0..1.0
-  # would return true as for 1 so as for 1.0
+  # #include? corresponds with Ruby's default one, which considers a range as an interval
+  # (0..1).include? 1.0
+  # 1.in 0..1
+  # => true
+  # and (0...1.0).include? 1.0
+  # => false
   def include?(number_or_range)
     if Numeric === number_or_range
       include_number? number_or_range
@@ -93,36 +132,38 @@ class Range
     end
   end
   
-  def x?(range)
-    return false if empty?
+  # Does these ranges have at least one common point?
+  # (0..1).x? 1..2
+  # (1...2).x? 0..1
+  # (0..3).x? 1..2
+  # (1..2).x? 0..3
+  # => true
+  # (0..1.4).x? 1.5..2
+  # (0...1).x? 1..2
+  # (2..3).x? 0..1
+  # => false
+  def intersects?(range)
     return range.x? self if range.is XRange
-    range_end = range.included_end
-    if range_end < range.first
-      return x?(range_end..range.first)
-    end
-    self_end = included_end
-    if self_end < first
-      return (first..self_end).x?(range)
-    end
-    case self_end <=> range_end
-    when -1
-      self_end >= range.first
-    when 1
-      first <= range_end >= first
-    else
-      true
-    end
+    (range.last > first or (!range.exclude_end? and range.last == first)) and
+    (range.first < last or (!exclude_end? and range.first == last))
   end
-  alias :intersects? :x?
+  alias :x? :intersects?
   
+  # Union
+  # (1..3) | (2..4)
+  # => 1..4
+  # (1..2) | (3..4)
+  # => 1..4
+  # A result will be inadequate if any range is not integered and excludes end
   def |(range)
     return range | self if range.is XRange
     range = range.include_end
     self_ = self.include_end
-    return XRange.new self, range if !x?(range)
-    [self.begin, range.begin].min..[self_.end, range.end].max
+    return XRange.new self_, range if !self_.x?(range)
+    [first, range.first].min..[self_.last, range.last].max
   end
   
+  # Diff
   def ^(range)
     common = self & range
     self - common | range - common
@@ -132,53 +173,12 @@ class Range
     (first <=> range.first).b || included_end <=> range.included_end
   end
   
-  def center
-    (first + include_end.last)/2 
-  end
-  
-  def part(i, j) 
-    first + (i-1)*size/j .. first - 1 + i*size/j unless i < 1 or j < 1 or j < i 
-  end
-  
-  def div(n)
-    unless n < 1
-      rarray = []
-      j = self.begin
-      iend = include_end.end
-      rarray << (j..(j+=n)-1) until j+n > iend
-      rarray << (j..iend)
-    end
-  end
-  
-  def /(i)
-    part 1, i
-  end
-  
-  def >>(i)
-    self.begin + i .. include_end.end + i
-  end
-  
-  def <<(i)
-    self.begin - i .. include_end.end - i
-  end
-  
-  def of(ary) 
-    ary[self] 
-  end
-  
-  def odds
-    select {|i| i%2 != 0}
-  end
-  
-  def evens
-    select {|i| i%2 == 0}
-  end
-  
+  # Sum of integers in a range
   def sum
-    ie = include_end.end
-    return (1..ie).sum - (0..-self.begin).sum if self.begin < 0
-    return 0 if ie < self.begin
-    ie*(ie+1)/2 - (1..self.begin-1).sum
+    last = included_end
+    return (1..last).sum - (0..-first).sum if first < 0
+    return 0 if last <= first
+    last*(last+1)/2 - (1..first-1).sum
   end
   
   # minimum of monotone function definition interval
@@ -202,6 +202,30 @@ class Range
       (first..c-1).max(&fun)
     end
   end 
+  
+  def odds
+    select {|i| i%2 != 0}
+  end
+  
+  def evens
+    select {|i| i%2 == 0}
+  end
+  
+  # Average
+  def center
+    (first + included_end)/2 
+  end
+  alias :avg :center
+  
+  # Move range as interval right
+  def >>(i)
+    self.begin + i .. included_end + i
+  end
+  
+  # Move range as interval left
+  def <<(i)
+    self.begin - i .. included_end - i
+  end
   
 end
 
@@ -337,7 +361,7 @@ public
   end
   
   def inspect
-    "XRange(#{@ranges.join(', ').gsub('Infinity', '∞')})"
+    "XRange(#{@ranges.join(', ').gsub('-Infinity', '-∞').gsub('Infinity', '+∞')})"
   end
   
 end
