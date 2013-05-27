@@ -100,7 +100,7 @@ class Array
   
   end # << self
     
-  add_iterator_name(instance_methods.grep(/_by$/)+%w{every no select reject partition find_all find sum foldr foldl fold count rand_by})
+  add_iterator_name(instance_methods.grep(/_by$/)+%w{every no select reject partition find_all sum foldr foldl fold count rand_by})
 
   # Benchmark 2:
   #
@@ -236,7 +236,7 @@ class Array
         err.message << " (`#{method}' interpreted as decorator-function `#{meth}')"
         raise err
       end}
-      when :find_by, :select_by, :reject_by
+      when :find_by, :rfind_by,:select_by, :reject_by
         Array.class_eval %{
       def #{method}(val)
         # select_by_count(max_count) =>

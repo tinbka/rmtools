@@ -140,7 +140,7 @@ class Array
   end
   
   
-  # selectors  
+  # filters  
   def odds
     values_at(*(0...size).odds)
   end
@@ -150,10 +150,6 @@ class Array
   end
   
   # conditional
-  def uniq?
-    uniq == self
-  end  
-  
   def every?
     !find {|e| !yield(e)}
   end
@@ -162,8 +158,22 @@ class Array
     !find {|e| yield(e)}
   end
   
+  # rightmost #find
+  def rfind
+    reverse_each {|e| return e if yield e}
+    nil
+  end
+  
+  # find-by-value filters
+  # It's more of a pattern. Use of respective meta-iterators is prefered.
   def find_by(key, value)
     find {|e| e.__send__(key) == value}
+  end
+  
+  # rightmost #find_by
+  def rfind_by(key, value)
+    reverse_each {|e| return e if e.__send__(key) == value}
+    nil
   end
   
   def select_by(key, value)
@@ -174,11 +184,28 @@ class Array
     reject {|e| e.__send__(key) == value}
   end
   
+  
+  # uniqs
+  def uniq?
+    uniq == self
+  end  
+  
+  # rightmost #uniq
+  def runiq
+    reverse.uniq.reverse
+  end
+  
+  # rightmost #uniq_by
+  def runiq_by(&block)
+    reverse.uniq_by(&block).reverse
+  end
+  
   # sort / group
   def sorted_uniq_by(&block) 
     uniq_by(&block).sort_by(&block)
   end
   
+  # C-function, see it in /ext
   def arrange_by(*args, &block)
     arrange(*args, &block)
   end
@@ -243,23 +270,13 @@ class Array
     
     
   # mapreduce
-  def sum(identity=0, &b) foldl(:+, &b) || identity end
-  
-  # fastering activesupport's method
-  def group_by(&b) arrange(:group, &b) end
-  
-  
-  
-  
-  # rightmost #find
-  def rfind
-    reverse_each {|e| return e if yield e}
-    nil
+  def sum(identity=0, &b) 
+    foldl(:+, &b) || identity 
   end
   
-  # rightmost #uniq
-  def runiq
-    reverse.uniq.reverse
+  # fastering activesupport's method
+  def group_by(&b) 
+    arrange(:group, &b) 
   end
   
 end

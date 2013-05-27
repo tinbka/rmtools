@@ -64,9 +64,9 @@ class Range
   # (0.9...1.1).size 
   # => 1 (equivalent list of one 1 which is between 0.9 and 1.1)
   # (2..1).size 
-  # => -2 (hardly it has some sense, though hardly such a range can appear)
+  # => 0 (such a range just does't make sense)
   def size
-    int_end - first.ceil + 1
+    [int_end - first.ceil + 1, 0].max
   end
   
   # Include any integer?
@@ -91,7 +91,7 @@ class Range
   
   # Unfortunately, Range's start point can not be excluded, thus there is no *true inversion* of a range with included end.
   # Though, is this domain we can "integerize" range, then
-  # -(1..2)   
+  # -(1..2)
   # -(0.5..2.1)
   # (i.e. all excluding these indices: [1, 2])
   ### => XRange(-∞..0, 3..+∞)
@@ -108,9 +108,9 @@ class Range
   end
   
   # On the basis of #-@ for non-integers,
-  # (0..3) - (0.5..2.1)
   # (0..3) - (1..2)
-  ### => XRange(0..0, 3..3.0)
+  # (0..3) - (0.5..2.1)
+  ### => XRange(0..0, 3..3)
   def -(range)
     self & -range
   end
@@ -142,25 +142,25 @@ class Range
   # (0...1).x? 1..2
   # (2..3).x? 0..1
   # => false
-  def intersects?(range)
+  def x?(range, pretend_not_exclude=false)
     return range.x? self if range.is XRange
-    (range.last > first or (!range.exclude_end? and range.last == first)) and
-    (range.first < last or (!exclude_end? and range.first == last))
+    (range.last > first or ((!range.exclude_end? or pretend_not_exclude) and range.last == first)) and
+    (range.first < last or ((!exclude_end? or pretend_not_exclude) and range.first == last))
   end
-  alias :x? :intersects?
+  alias :intersects? :x?
   
   # Union
   # (1..3) | (2..4)
   # => 1..4
-  # (1..2) | (3..4)
+  # (1...2) | (2..4)
   # => 1..4
+  # (1..2) | (3..4)
+  # => XRange(1..2, 3..4)
   # A result will be inadequate if any range is not integered and excludes end
   def |(range)
     return range | self if range.is XRange
-    range = range.include_end
-    self_ = self.include_end
-    return XRange.new self_, range if !self_.x?(range)
-    [first, range.first].min..[self_.last, range.last].max
+    return XRange.new self, range if !x?(range, true)
+    [first, range.first].min..[included_end, range.included_end].max
   end
   
   # Diff
@@ -219,12 +219,12 @@ class Range
   
   # Move range as interval right
   def >>(i)
-    self.begin + i .. included_end + i
+    first + i .. included_end + i
   end
   
   # Move range as interval left
   def <<(i)
-    self.begin - i .. included_end - i
+    first - i .. included_end - i
   end
   
 end

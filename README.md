@@ -45,7 +45,8 @@ It's still randomly documented since it's just my working tool.
 
 * Array
   * Fixed #avg, #avg_by, #rand_by in case of an empty array: return nil
-  * Added #intersects? aliased as #x?
+  * Added #intersects? (alias #x?)
+  * Added #rfind_by, #runiq_by and few more iterators
 
 * Symbol
   * Added #+, #split and #method_missing to proxy all possible methods to #to_s
