@@ -100,7 +100,7 @@ class Array
   
   end # << self
     
-  add_iterator_name(instance_methods.grep(/_by$/)+%w{every no select reject partition find_all sum foldr foldl fold count rand_by})
+  add_iterator_name(instance_methods.grep(/_by$/)+%w{every no select reject partition find_all find sum foldr foldl fold count rand_by})
 
   # Benchmark 2:
   #

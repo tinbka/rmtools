@@ -25,6 +25,8 @@ end
 # The present extension is solving the second problem, yet
 # * saving the capability of a Range syntactic sugar;
 # * does exactly extend and not modify the Range behaviour.
+# These methods support only numeric ranges, it won't work with chars and datetime borders,
+# though I'll make a support for the Date and Time in a future version.
 class Range
   
   private
