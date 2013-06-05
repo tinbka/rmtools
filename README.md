@@ -27,6 +27,18 @@ It's still randomly documented since it's just my working tool.
 
 ### CHANGES
 
+##### Version 2.0.1
+  
+* Enumerable
+  * Array
+    * For ruby >= 1.9.3 #uniq_by[!] is alias of #uniq[!] itself, since it’s native implementation appears to be ~1.4x faster
+    * Added #partition_by iterator
+  * Generalized faster set operations for Array and Set (see rmtools/enumerable/set_ops)
+  * Boosted &-operator
+
+* ActiveRecord::Base
+  * Added #update_attributes?
+
 ##### Version 2.0.0
 
 * Array Meta-iterators

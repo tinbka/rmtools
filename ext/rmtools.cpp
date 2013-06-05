@@ -199,14 +199,17 @@ static VALUE rb_str_conjunction(VALUE self, VALUE str)
  */
 static VALUE rb_ary_uniq_by_bang(VALUE ary)
 {
+  long len = RARRAY_LEN(ary)
+  if (len < 2)
+      return Qnil;
   if (!rb_block_given_p())
       return rb_ary_new4(RARRAY_LEN(ary), RARRAY_PTR(ary));
   VALUE hash, res_hash, res, el;
-  long i, j;
+  long i, j, len;
 
   hash = rb_hash_new();
   res_hash = rb_hash_new();
-  for (i=j=0; i<RARRAY_LEN(ary); i++) {
+  for (i=j=0; i<len; i++) {
       // We store an element itself and so we won't calculate function of it 
       // other time we'll find it in source. Ruby store function is very fast, 
       // so we can neglect its runtime even if source array is allready uniq
@@ -220,7 +223,7 @@ static VALUE rb_ary_uniq_by_bang(VALUE ary)
   }
   ARY_SET_LEN(ary, j);
   
-  return ary;
+  return j == len ? Qnil : ary;
 }
 
 /*
@@ -228,7 +231,9 @@ static VALUE rb_ary_uniq_by_bang(VALUE ary)
  */
 static VALUE rb_ary_uniq_by(VALUE ary)
 {
-  return rb_ary_uniq_by_bang(rb_ary_dup(ary));
+  VALUE ary_dup = rb_ary_dup(ary);
+  rb_ary_uniq_by_bang(ary_dup);
+  return ary_dup;
 }
 
 /*

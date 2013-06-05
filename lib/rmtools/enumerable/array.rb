@@ -1,71 +1,10 @@
 # encoding: utf-8
 require 'active_support/core_ext/array'
 RMTools::require 'functional/fold'
+RMTools::require 'enumerable/set_ops'
 
 class Array
-  # builtin methods overwrite
-  # why should we do zillions of cycles just for ensure A | [] = A - [] = A or A & [] = []
-  # though - and & should be improved within C-extension to break loop when no items have lost in self
-  alias union |
-  alias coallition +
-  alias subtraction -
-  alias intersection &
-  private :union, :coallition, :subtraction, :intersection
-  
-  def |(ary) 
-    if empty?
-      ary.uniq
-    elsif ary.respond_to? :empty? and ary.empty?
-      dup
-    else union(ary) 
-    end
-  end
-  
-  def +(ary) 
-    if empty?
-      if ary.respond_to? :empty? and ary.empty?
-        []
-      else ary.dup 
-      end
-    elsif ary.respond_to? :empty? and ary.empty?
-      dup
-    else coallition(ary) 
-    end
-  end
-  
-  def -(ary) 
-    if empty?
-      []
-    elsif ary.respond_to? :empty? and ary.empty?
-      dup
-    else subtraction(ary) 
-    end
-  end
-  
-  def &(ary) 
-    if empty? or (ary.respond_to? :empty? and ary.empty?)
-      [] 
-    else intersection(ary) 
-    end
-  end
-  
-  def ^(ary)
-    if empty? or (ary.respond_to? :empty? and ary.empty?)
-      [dup, ary.dup]
-    elsif self == ary
-      [[], []]
-    else
-      common = intersection ary
-      [self - common, ary - common]
-    end
-  end
-  
-  alias diff ^
-  
-  def intersects?(ary)
-    (self & ary).any?
-  end
-  alias :x? :intersects?
+  include RMTools::SmarterSetOps
 
   # arithmetics
   def avg
@@ -184,6 +123,14 @@ class Array
     reject {|e| e.__send__(key) == value}
   end
   
+  def partition_by(key, value)
+    partition {|e| e.__send__(key) == value}
+  end
+  
+  if RUBY_VERSION >= '1.9.3'
+    alias :uniq_by :uniq
+    alias :uniq_by! :uniq!
+  end
   
   # uniqs
   def uniq?

@@ -65,7 +65,7 @@ class Array
               
               return case iterator
                 when :sum, :sort_along_by; __send__(iterator, args.shift) {|i| i.__send__ meth, *args, &block}
-                when :find_by, :select_by, :reject_by; __send__(iterator, meth, *args)
+                when :find_by, :select_by, :reject_by, :partition_by; __send__(iterator, meth, *args)
                 else __send__(iterator) {|i| i.__send__ meth, *args, &block}
                 end
             rescue NoMethodError => e
@@ -100,7 +100,7 @@ class Array
   
   end # << self
     
-  add_iterator_name(instance_methods.grep(/_by$/)+%w{every no select reject partition find_all find sum foldr foldl fold count rand_by})
+  add_iterator_name(instance_methods.grep(/_by$/)+%w{every no which select reject partition find_all find sum foldr foldl fold count rand_by})
 
   # Benchmark 2:
   #
@@ -236,7 +236,7 @@ class Array
         err.message << " (`#{method}' interpreted as decorator-function `#{meth}')"
         raise err
       end}
-      when :find_by, :rfind_by,:select_by, :reject_by
+      when :find_by, :rfind_by,:select_by, :reject_by, :partition_by
         Array.class_eval %{
       def #{method}(val)
         # select_by_count(max_count) =>

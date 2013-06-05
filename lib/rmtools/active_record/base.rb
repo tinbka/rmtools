@@ -152,7 +152,7 @@ module ActiveRecord
       id ? 
         delete_with_id : 
         field ? 
-          self.class.delete_all(field => __send__(field)) : 
+          self.class.delete_all(field => self[field]) : 
           self.class.delete_all(attributes)
     end
         
@@ -160,7 +160,7 @@ module ActiveRecord
       id ? 
         destroy_with_id : 
         field ? 
-          self.class.destroy_all(field => __send__(field)) : 
+          self.class.destroy_all(field => self[field]) : 
           self.class.destroy_all(attributes)
     end
     
@@ -170,6 +170,11 @@ module ActiveRecord
     
     def with_same(attr)
       self.class.where(attr => self[attr])
+    end
+  
+    def update_attributes?(hash)
+      hash.each {|k, v| self[k] = v}
+      changed? && save
     end
     
   end
