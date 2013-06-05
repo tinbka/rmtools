@@ -15,54 +15,55 @@ module RMTools
         alias :subtraction :-
         alias :intersection :&
         protected :union, :coallition, :subtraction, :intersection
+        
+        def |(ary) 
+          return ary.uniq if empty?
+          return uniq if ary.respond_to? :empty? and ary.empty?
+          
+          union ary
+        end
+        
+        def +(ary) 
+          if empty?
+            return [] if ary.respond_to? :empty? and ary.empty?
+            ary.dup
+          end
+          return dup if ary.respond_to? :empty? and ary.empty?
+          
+          coallition ary
+        end
+        
+        def -(ary) 
+          return [] if empty?
+          return dup if ary.respond_to? :empty? and ary.empty?
+          
+          subtraction ary
+        end
+        
+        def &(ary) 
+          return [] if empty? or (ary.respond_to? :empty? and ary.empty?)
+          return ary.intersection self if size < ary.size
+          
+          intersection ary
+        end
+        
+        def ^(ary)
+          return [dup, ary.dup] if empty? or (ary.respond_to? :empty? and ary.empty?)
+          return [[], []] if self == ary
+          
+          common = intersection ary
+          [self - common, ary - common]
+        end
+        
+        alias diff ^
+        
+        def intersects?(ary)
+          (self & ary).any?
+        end
+        alias :x? :intersects?
       }
+      super
     end
-    
-    def |(ary) 
-      return ary.uniq if empty?
-      return uniq if ary.respond_to? :empty? and ary.empty?
-      
-      union ary
-    end
-    
-    def +(ary) 
-      if empty?
-        return [] if ary.respond_to? :empty? and ary.empty?
-        ary.dup
-      end
-      return dup if ary.respond_to? :empty? and ary.empty?
-      
-      coallition ary
-    end
-    
-    def -(ary) 
-      return [] if empty?
-      return dup if ary.respond_to? :empty? and ary.empty?
-      
-      subtraction ary
-    end
-    
-    def &(ary) 
-      return [] if empty? or (ary.respond_to? :empty? and ary.empty?)
-      return ary.intersection self if size > ary.size
-      
-      intersection ary
-    end
-    
-    def ^(ary)
-      return [dup, ary.dup] if empty? or (ary.respond_to? :empty? and ary.empty?)
-      return [[], []] if self == ary
-      
-      common = intersection ary
-      [self - common, ary - common]
-    end
-    
-    alias diff ^
-    
-    def intersects?(ary)
-      (self & ary).any?
-    end
-    alias :x? :intersects?
   
   end
 end
