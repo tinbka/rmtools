@@ -15,6 +15,14 @@ class Array
   mattr_reader :iterators_names, :iterators_pattern
   @@iterators_names = []
   
+private
+  def simple_inplace_singularize!(noun)
+    noun.sub!(/(ss|[sc]h|[xo])es([=!?]?)$/, '\1\2') or 
+    noun.sub!(/ies([=!?]?)$/, 'y\1') or 
+    noun.sub!(/ves([=!?]?)$/, 'f\1') or 
+    noun.sub!(/s([=!?]?)$/, '\1')
+  end
+  
   class << self
     
     def add_iterator_name(name_or_list)
@@ -73,7 +81,7 @@ class Array
               raise e
             end
             
-          elsif meth.sub!(/sses([=!?]?)$/, 'ss\1') or meth.sub!(/ies([=!?]?)$/, 'y\1') or meth.sub!(/s([=!?]?)$/, '\1')
+          elsif simple_inplace_singularize!(meth)
             assignment = meth =~ /=$/
             meth = meth.to_sym
             
@@ -161,7 +169,7 @@ class Array
         end
       end
       
-    elsif meth.sub!(/sses([=!?]?)$/, 'ss\1') or meth.sub!(/ies([=!?]?)$/, 'y\1') or meth.sub!(/s([=!?]?)$/, '\1')
+    elsif simple_inplace_singularize!(meth)
       assignment = meth =~ /=$/
       meth = meth.to_sym
       
@@ -236,7 +244,7 @@ class Array
         err.message << " (`#{method}' interpreted as decorator-function `#{meth}')"
         raise err
       end}
-      when :find_by, :rfind_by,:select_by, :reject_by, :partition_by
+      when :find_by, :rfind_by, :select_by, :reject_by, :partition_by
         Array.class_eval %{
       def #{method}(val)
         # select_by_count(max_count) =>
@@ -258,7 +266,7 @@ class Array
       end}
       end
       
-    elsif meth.sub!(/sses([=!?]?)$/, 'ss\1') or meth.sub!(/ies([=!?]?)$/, 'y\1') or meth.sub!(/s([=!?]?)$/, '\1')
+    elsif simple_inplace_singularize!(meth)
       assignment = meth =~ /=$/
       meth = meth.to_sym
       
