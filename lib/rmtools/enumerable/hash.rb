@@ -44,9 +44,11 @@ else
   end
 end
 
-  def any?
-    !empty?
-  end
+if RUBY_VERSION < '1.9'
+  def any?(&block)
+    !!find(&block)
+   end
+end
   
   def max_by_key; [(m = keys.max), self[m]] end
   

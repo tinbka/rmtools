@@ -63,14 +63,11 @@ private
         # 2. Most latency is given by #method_missing, but which are factor of #__send__?
         def method_missing(method, *args, &block)
           if match = (meth = method.to_s).match(@@iterators_pattern)
-            iterator, meth = match[1].to_sym, match[2].to_sym
+            iterator, meth = match[1], match[2]
+            iterator.sub!(/^((?:ever|an)y|no(?:ne)?)$/, '\1?')
+            iterator = iterator.to_sym
             
             begin
-              case iterator
-              when :every then iterator = :every?
-              when :no     then iterator = :no?
-              end
-              
               return case iterator
                 when :sum, :sort_along_by; __send__(iterator, args.shift) {|i| i.__send__ meth, *args, &block}
                 when :find_by, :select_by, :reject_by, :partition_by; __send__(iterator, meth, *args)
@@ -108,7 +105,7 @@ private
   
   end # << self
     
-  add_iterator_name(instance_methods.grep(/_by$/)+%w{every no which select reject partition find_all find sum foldr foldl fold count rand_by})
+  add_iterator_name(instance_methods.grep(/_by$/)+%w{every any no none which select reject partition find_all find sum foldr foldl fold count rand_by})
 
   # Benchmark 2:
   #
@@ -227,11 +224,9 @@ private
   # # += 6% of time
   def method_missing(method, *args, &block)
     if match = (meth = method.to_s).match(@@iterators_pattern)
-      iterator, meth = match[1].to_sym, match[2].to_sym
-      case iterator
-      when :every then iterator = :every?
-      when :no     then iterator = :no?
-      end
+      iterator, meth = match[1], match[2]
+      iterator.sub!(/^((?:ever|an)y|no(?:ne)?)$/, '\1?')
+      iterator = iterator.to_sym
       
       case iterator
       when :sum, :sort_along_by
