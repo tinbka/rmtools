@@ -27,6 +27,13 @@ It's still randomly documented since it's just my working tool.
 
 ### CHANGES
 
+##### Version 2.1.1
+
+* Array
+  * Added #any and #none to iterators pattern
+* Hash
+  * Fixed #any? (and removed it for Ruby>=1.9)
+
 ##### Version 2.1.0
 
 * Array
