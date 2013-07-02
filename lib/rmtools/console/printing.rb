@@ -53,6 +53,13 @@ module RMTools
   def tick!
     print %W{|\b /\b -\b \\\b +\b X\b}.rand
   end
+  
+  def tick_while
+    ticker = thread {loop {RMTools::tick!}}
+    res = yield
+    ticker.kill
+    res
+  end
     
-  module_function :tick!
+  module_function :tick!, :tick_while
 end

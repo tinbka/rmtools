@@ -125,12 +125,14 @@ class Range
   # and (0...1.0).include? 1.0
   # => false
   def include?(number_or_range)
-    if Numeric === number_or_range
+    if Numeric === number_or_range or String === number_or_range
       include_number? number_or_range
     elsif XRange === number_or_range
       number_or_range.include? self
-    else
+    elsif Range === number_or_range
       include_number? number_or_range.first and include_number? number_or_range.last
+    else
+      raise TypeError, "can not find #{number_or_range.class} in Range"
     end
   end
   
