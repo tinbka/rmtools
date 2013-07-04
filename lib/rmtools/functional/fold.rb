@@ -9,8 +9,8 @@ module Enumerable
         reduce(m) {|m, i| m ? o.call(m, i) : i}
     when Symbol
       block_given? ?
-        reduce(m && yield(m)) {|m, i| m ? m.send(o, yield(i)) : yield(i)} : 
-        reduce(m) {|m, i| m ? m.send(o, i) : i}
+        reduce(m && yield(m)) {|m, i| m ? m.__send__(o, yield(i)) : yield(i)} : 
+        reduce(m) {|m, i| m ? m.__send__(o, i) : i}
     else TypeError! o, Proc, Symbol
     end
   end
@@ -24,8 +24,8 @@ module Enumerable
       reverse.reduce(m) {|m, i| m ? o.call(i, m) : i}
     when Symbol
     block_given? ?
-      reverse.reduce(m && yield(m)) {|m, i| m ? yield(i).send(o, m) : yield(i)} : 
-      reverse.reduce(m) {|m, i| m ? i.send(o, m) : i}
+      reverse.reduce(m && yield(m)) {|m, i| m ? yield(i).__send__(o, m) : yield(i)} : 
+      reverse.reduce(m) {|m, i| m ? i.__send__(o, m) : i}
     else TypeError! o, Proc, Symbol
     end
   end

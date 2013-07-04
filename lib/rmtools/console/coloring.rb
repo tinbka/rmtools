@@ -77,7 +77,7 @@ module RMTools
       #
       # Actually, transparent coloring is slower
       def method_missing(m, str, transparent=false)
-        paint str, transparent, *(m.to_s/"_")
+        paint str, transparent, *(m.to_s/"_").bs
       end
           
       def clean str

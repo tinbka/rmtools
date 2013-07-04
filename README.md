@@ -27,9 +27,20 @@ It's still randomly documented since it's just my working tool.
 
 ### CHANGES
 
+##### Version 2.2.1
+
+* ::RMLogger
+  * Aliased #info -> #puts to be able to set RMLogger as default logger wherever it's possible
+  * Added #get_config
+  
+* ::Painter
+  * #method_missing now accepts :"_<effect key>" as well as :"<color key>[_<effect key>]"
+
 ##### Version 2.2.0
 
-* Added ::ScpHelper
+* Added ::FileWatcher
+  * Constantly checks files updated in a directory and does some action whenever a update has been met
+  * A subclass, ::ScpHelper copies updated files to specified host
 
 ##### Version 2.1.1
 

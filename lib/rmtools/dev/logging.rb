@@ -1,7 +1,7 @@
 # encoding: utf-8
+RMTools::require 'core'
 RMTools::require 'console/coloring'
 RMTools::require 'text/string_parse'
-RMTools::require 'b'
 
 module RMTools
 
@@ -46,7 +46,7 @@ module RMTools
     end
           
     def defaults
-      puts %{    # #{@c.y 'common options:'}
+      Kernel::puts %{    # #{@c.y 'common options:'}
     :q => false,   # not print
     :out => false, # output to file, may contain strftime's %H%M%Y etc for filename
     :time => ["%H:%M:%S", "%03d"], # strftime, [msecs]
@@ -127,14 +127,18 @@ module RMTools
       str << "\n" if opts&INLINE==0
       log_str = cfg.color_out ? str : @c.clean(str)
       RMTools.write out, log_str if log_
-      Kernel.print str if print_
+      Kernel::print str if print_
     end
         
     def get_config!
       @file_formats.empty? ? @default_format : @file_formats[File.expand_path((@current_caller = caller)[1].till ':')]
     end
         
-    # controllers:
+    def get_config(file=nil)
+      @file_formats[file && File.expand_path(file)]
+    end
+        
+    # controls:
     # - $panic: print debug messages
     # - $verbose: print log messages
     # - $quiet: print only warn messages regardless of other globals
@@ -189,6 +193,11 @@ module RMTools
     alias :<= :debug
     alias :<< :info
     alias :<   :warn
+    alias :puts :info
+    
+    def print text
+      info text, caller: 1, mute: INLINE 
+    end
         
     Modes.each {|m| define_method("#{m}=") {|mute| send :"mute_#{m}=", !mute}}
     
