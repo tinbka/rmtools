@@ -19,8 +19,8 @@ module RMTools
       CYAN = 36
       GRAY = 37
             
-      Colors = {:black => 30, :red => 31, :green => 32, :yellow => 33, :blue => 34, :purple => 35, :cyan => 36, :gray => 37, :pink => [35, 1],
-                    :k => 30, :r => 31, :g => 32, :y => 33, :b => 34, :p => 35, :c => 36, :w => [37, 1]
+      Colors = {:black => 30, :red => 31, :green => 32, :yellow => 33, :blue => 34, :purple => 35, :cyan => 36, :gray => 37, :pink => [35, 1], :violet => [35, 1],
+                    :k => 30, :r => 31, :g => 32, :y => 33, :b => 34, :p => 35, :c => 36, :w => [37, 1], :v => [35, 1]
                   }.unify_keys
       Effects = {:bold => 1, :underline => 4, :graybg => 5, :boldbg => 7,
                       :b => 1, :u => 4, :gbg => 5, :bbg => 7

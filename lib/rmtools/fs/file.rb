@@ -32,7 +32,9 @@ class File
     end
   
     def modify(pattern, bak=true, &block)
-      Dir[pattern].select {|file| __modify(file, bak, &block)}
+      Dir[pattern].select {|path| 
+        file?(path) && __modify(path, bak, &block)
+      }
     end
     
   

@@ -69,5 +69,9 @@ end
     each {|k, v| self[k] = yield(k,v)}
     self
   end
+  
+  def truth_map
+    map_values {|v| !!v}
+  end
 
 end

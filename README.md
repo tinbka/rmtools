@@ -27,6 +27,14 @@ It's still randomly documented since it's just my working tool.
 
 ### CHANGES
 
+##### Version 2.2.2
+
+* Enumerable
+  * Added #truth_map. Hash#truth_map maps values to booleans
+  
+* File
+  * Added ::file? pathname check to ::modify iterator
+
 ##### Version 2.2.1
 
 * ::RMLogger
@@ -35,6 +43,7 @@ It's still randomly documented since it's just my working tool.
   
 * ::Painter
   * #method_missing now accepts :"_<effect key>" as well as :"<color key>[_<effect key>]"
+  * Aliased "purple_bold" as "violet", "v"
 
 ##### Version 2.2.0
 

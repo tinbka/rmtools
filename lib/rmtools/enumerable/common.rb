@@ -56,5 +56,9 @@ module Enumerable
   def threadify(threads=4, &block)
     RMTools::threadify(self, threads, &block)
   end
+  
+  def truth_map
+    to_a.map_hash {|i| [i, true]}
+  end
 
 end
