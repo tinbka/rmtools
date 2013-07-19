@@ -187,7 +187,7 @@ class Range
   
   # minimum of monotone function definition interval
   def min(&fun)
-    return first if yield first
+    return first if !fun or yield first
     return unless yield last
     if yield(c = center)
       (first+1..c-1).min(&fun) || c
@@ -198,7 +198,7 @@ class Range
   
   # maximum of monotone function definition interval
   def max(&fun)
-    return last if yield last
+    return last if !fun or yield last
     return unless yield first
     if yield(c = center)
       (c+1..last-1).max(&fun) || c

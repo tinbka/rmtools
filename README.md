@@ -27,7 +27,7 @@ It's still randomly documented since it's just my working tool.
 
 ### CHANGES
 
-##### Version 2.2.3
+##### Version 2.2.4
 
 * Hash
   * #key_value = to_a.first
@@ -39,6 +39,9 @@ It's still randomly documented since it's just my working tool.
 * Dir
   * Fixed #content for dirs with dotted files only
   * #content now accepts :recursive and :include_dot options turned off by default
+  
+* Range
+  * #min/#max return #first/#last if called with no block
   
 * Removed "-module" ld_flag from extconf.rb
 
