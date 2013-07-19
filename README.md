@@ -27,6 +27,21 @@ It's still randomly documented since it's just my working tool.
 
 ### CHANGES
 
+##### Version 2.2.3
+
+* Hash
+  * #key_value = to_a.first
+
+* Array
+  * #fold[l,r]_<method> now passes up to 2 arguments to fold itself
+  * Aliased sort_along_by => order_by
+  
+* Dir
+  * Fixed #content for dirs with dotted files only
+  * #content now accepts :recursive and :include_dot options turned off by default
+  
+* Removed "-module" ld_flag from extconf.rb
+
 ##### Version 2.2.2
 
 * Enumerable
@@ -55,6 +70,7 @@ It's still randomly documented since it's just my working tool.
 
 * Array
   * Added #any and #none to iterators pattern
+  
 * Hash
   * Fixed #any? (and removed it for Ruby>=1.9)
 
@@ -64,6 +80,7 @@ It's still randomly documented since it's just my working tool.
   * For ruby >= 1.9.3 #uniq_by[!] is alias of #uniq[!] itself, since it’s native implementation appears to be ~1.4x faster
   * A bit better english singularizer for iterators
   * Added #partition_by iterator
+  
 * Enumerable
   * Generalized faster set operations for Array and Set (see rmtools/enumerable/set_ops)
   * Boosted &-operator

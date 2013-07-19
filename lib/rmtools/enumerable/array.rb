@@ -173,6 +173,7 @@ class Array
       sort_by {|e| ary.index yield e}
     end
   end
+  alias :order_by :sort_along_by
   
   # concatenation  
   # analogue to String#>>

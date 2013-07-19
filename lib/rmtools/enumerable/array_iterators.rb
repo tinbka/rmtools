@@ -12,10 +12,15 @@ RMTools::require 'enumerable/array'
 # => [[1, 2, 3], [3, 4, 6]]
 class Array
   alias :throw_no :method_missing
-  mattr_reader :iterators_names, :iterators_pattern
+  if respond_to? :mattr_reader
+    mattr_reader :iterators_names, :iterators_pattern
+  else
+    cattr_reader :iterators_names, :iterators_pattern, :instance_reader => false
+  end
   @@iterators_names = []
   
 private
+
   def simple_inplace_singularize!(noun)
     noun.sub!(/(ss|[sc]h|[xo])es([=!?]?)$/, '\1\2') or 
     noun.sub!(/ies([=!?]?)$/, 'y\1') or 
@@ -69,9 +74,14 @@ private
             
             begin
               return case iterator
-                when :sum, :sort_along_by; __send__(iterator, args.shift) {|i| i.__send__ meth, *args, &block}
-                when :find_by, :select_by, :reject_by, :partition_by; __send__(iterator, meth, *args)
-                else __send__(iterator) {|i| i.__send__ meth, *args, &block}
+                when :sum, :sort_along_by
+                  __send__(iterator, args.shift) {|i| i.__send__ meth, *args, &block}
+                when :find_by, :select_by, :reject_by, :partition_by
+                  __send__(iterator, meth, *args)
+                when :fold, :foldl, :foldr
+                  __send__(iterator, *args[0, 2]) {|e| e.__send__ meth, *args[2..-1], &block}
+                else
+                  __send__(iterator) {|i| i.__send__ meth, *args, &block}
                 end
             rescue NoMethodError => e
               e.message << " (`#{method}' interpreted as decorator-function `#{meth}')"
@@ -230,30 +240,40 @@ private
       
       case iterator
       when :sum, :sort_along_by
-        Array.class_eval %{
-      def #{method}(*args, &block)
         # sum_posts_ids([], :all) =>
         # sum([]) {|e| e.posts_ids(:all)}
+        Array.class_eval %{
+      def #{method}(*args, &block)
         #{iterator}(args.shift) {|e| e.#{meth}(*args, &block)}
       rescue NoMethodError => err
         err.message << " (`#{method}' interpreted as decorator-function `#{meth}')"
         raise err
       end}
       when :find_by, :rfind_by, :select_by, :reject_by, :partition_by
-        Array.class_eval %{
-      def #{method}(val)
         # select_by_count(max_count) =>
         # select {|e| e.count == max_count}
+        Array.class_eval %{
+      def #{method}(val)
         #{iterator.to_s[0...-3]} {|e| e.#{meth} == val}
+      rescue NoMethodError => err
+        err.message << " (`#{method}' interpreted as decorator-function `#{meth}')"
+        raise err
+      end}      
+      when :fold, :foldl, :foldr
+        # fold_responders(:|, []) =>
+        # fold(:|, []) {|e| e.responders}
+        Array.class_eval %{
+      def #{method}(*args, &block)
+        #{iterator}(*args[0, 2]) {|e| e.#{meth}(*args[2..-1], &block)}
       rescue NoMethodError => err
         err.message << " (`#{method}' interpreted as decorator-function `#{meth}')"
         raise err
       end}
       else
-        Array.class_eval %{
-      def #{method}(*args, &block)
         # uniq_by_sum(1) {|i| 1 / i.weight}  =>  
         # uniq_by {|e| e.sum(1) {|i| 1 / i .weight}}
+        Array.class_eval %{
+      def #{method}(*args, &block)
         #{iterator} {|e| e.#{meth}(*args, &block)}
       rescue NoMethodError => err
         err.message << " (`#{method}' interpreted as decorator-function `#{meth}')"
@@ -266,15 +286,17 @@ private
       meth = meth.to_sym
       
       if assignment
+        # if Array === value
+        #   owner_ids = users_ids  =>  
+        #   each_with_index {|e, i| e.owner_id = users_ids[i]}
+        # else
+        #   owner_ids = user_id  =>  
+        #   each {|e, i| e.owner_id = user_id}
         Array.class_eval %{
       def #{method}(value)
         if Array === value
-          # owner_ids = users_ids  =>  
-          # each_with_index {|e, i| e.owner_id = users_ids[i]}
           each_with_index {|e, i| e.#{meth} value[i]}
         else
-          # owner_ids = user_id  =>  
-          # each {|e, i| e.owner_id = user_id}
           each {|e| e.#{meth} value}
         end
       rescue NoMethodError => err
@@ -282,10 +304,10 @@ private
         raise err
       end}
       else
-        Array.class_eval %{
-      def #{method}(*args, &block)
         # to_is(16)  =>  
         # map {|e| e.to_i(16)}
+        Array.class_eval %{
+      def #{method}(*args, &block)
         map {|e| e.#{meth}(*args, &block)}
       rescue NoMethodError => err
         err.message << " (`#{method}' interpreted as map-function `#{meth}')"

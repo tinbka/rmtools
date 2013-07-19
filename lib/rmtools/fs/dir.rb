@@ -11,25 +11,24 @@ class Dir
   end
   
   def include?(name)
-    #content.map {|f| File.split(f)[1]}.include? name
-    entries.include? name
+    to_a.include? name
   end
   
-  def recursive_content(flat=true)
-    list = []
-    cont = content.map {|f|
-      if File.directory?(f)
-             rc = Dir.new(f).recursive_content(flat)
-             flat ? list.concat(rc) : rc
-      else flat ? (list << f.sub(/^\.\//, '')) : f.sub(/^\.\//, '')
+  def recursive_content(flat=true, opts={})
+    if opts[:recursive] = flat
+      return content(opts)
+    end
+    content(opts).map {|p|
+      if File.directory?(p)
+             Dir.new(p).recursive_content(false)
+      else p
       end
     }
-    (flat ? list : cont)
   end
   
-  def content
-    list = Dir["#{path}/**"]
-    list.empty? ? to_a[2..-1].sort.map {|c| File.join path, c} : list
+  def content(opts={})
+    Dir["#{path}/#{'**/' if opts.recursive}#{'{.,}' if opts.include_dot}*"].
+    reject {|p| p =~ %r{/\.\.?$}}.map! {|p| p.sub(/^\.\//, '')}
   end
   
   def parent

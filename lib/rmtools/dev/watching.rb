@@ -14,7 +14,8 @@ module RMTools
     end
     
     def files_stats(*stat_params)
-      Dir(@pwd || Dir.pwd).recursive_content.flatten.map_hash {|fn| 
+      opts = {recursive: true, include_dot: true}.merge(stat_params.extract_options!)
+      Dir(@pwd || Dir.pwd).content(opts).map_hash {|fn| 
         if File.file? fn
           if stat_params
             stats = stat_params.map_hash {|param| 
