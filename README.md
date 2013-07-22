@@ -27,6 +27,14 @@ It's still randomly documented since it's just my working tool.
 
 ### CHANGES
 
+##### Version 2.2.5
+
+* String
+  * Added #fix_encoding! It differentiates only utf-8 and ansi-1251, though.
+
+* Range
+  * #include? never raises an exception
+
 ##### Version 2.2.4
 
 * Hash

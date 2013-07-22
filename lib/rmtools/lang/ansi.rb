@@ -3,7 +3,8 @@ require 'iconv'
 # Although ruby >= 1.9.3 would complain about not using String#encode, iconv is 2-4 times faster and still handles the ruby string encoding
 
 module RMTools
-
+  ENCODINGS_PATTERNS = {}
+  
   module Cyrillic
     RU_LETTERS = "абвгдеёжзийклмнопрстуфхцчшщьыъэюя", "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЬЫЪЭЮЯ"
     
@@ -15,11 +16,13 @@ module RMTools
       ANSI_YOYE.force_encodings "Windows-1251"
       ANSI_ENCODING = ANSI_LETTERS_UC[0].encoding
     end
-  end
   
+    ENCODINGS_PATTERNS["WINDOWS-1251"] = /[#{ANSI_LETTERS_UC.concat(ANSI_YOYE).join}]/
+  end
+
+  ICONVS = {}
   ANSI2UTF = Cyrillic::ANSI2UTF = Iconv.new("UTF-8//IGNORE", "WINDOWS-1251//IGNORE").method(:iconv)
   UTF2ANSI = Cyrillic::UTF2ANSI = Iconv.new("WINDOWS-1251//IGNORE", "UTF-8//IGNORE").method(:iconv)
-  ICONVS = {}
 end
   
 class String
@@ -38,6 +41,29 @@ class String
   
   def ansi!(from_encoding='UTF-8//IGNORE')
     replace ansi from_encoding
+  end
+  
+  
+  def valid_encoding?
+    begin
+      self =~ /./
+    rescue ArgumentError
+      false
+    else
+      true
+    end
+  end
+  
+  def fix_encoding!
+    # UTF-8 by default
+    return encoding.name.upcase if valid_encoding?
+    for enc, pattern in ENCODINGS_PATTERNS
+      force_encoding(enc)
+      if valid_encoding? and self =~ pattern
+        return encoding.name.upcase
+      end
+    end
+    false
   end
   
 end

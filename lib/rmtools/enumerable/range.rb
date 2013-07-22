@@ -132,7 +132,9 @@ class Range
     elsif Range === number_or_range
       include_number? number_or_range.first and include_number? number_or_range.last
     else
-      raise TypeError, "can not find #{number_or_range.class} in Range"
+      #raise TypeError, "can not find #{number_or_range.class} in Range"
+      # activerecord 4.0 tells it must not raise
+      false
     end
   end
   
