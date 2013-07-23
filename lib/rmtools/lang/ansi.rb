@@ -56,7 +56,7 @@ class String
   
   def fix_encoding!
     # UTF-8 by default
-    return encoding.name.upcase if valid_encoding?
+    return nil if valid_encoding?
     for enc, pattern in ENCODINGS_PATTERNS
       force_encoding(enc)
       if valid_encoding? and self =~ pattern
