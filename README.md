@@ -27,13 +27,16 @@ It's still randomly documented since it's just my working tool.
 
 ### CHANGES
 
-##### Version 2.2.5
+##### Version 2.2.6
 
 * String
-  * Added #fix_encoding! It differentiates only utf-8 and ansi-1251, though.
+  * Added #utf? and #find_compatible_encoding. Currently, latter one differentiates only utf-8 and ansi-1251.
 
 * Range
   * #include? never raises an exception
+
+* Array/Set
+  * Added #is_subset_of?
 
 ##### Version 2.2.4
 
