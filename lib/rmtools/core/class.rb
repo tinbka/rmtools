@@ -1,4 +1,6 @@
 # encoding: utf-8
+require 'rmtools/core/object'
+
 class Class
   
   def method_proxy *vars
