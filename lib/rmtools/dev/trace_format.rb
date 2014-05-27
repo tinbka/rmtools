@@ -20,8 +20,12 @@ module RMTools
   #     >>  10/0 end
   #          from (irb):3
   #     >>  divbyzero
-  
-  IgnoreFiles = %r{#{Regexp.escape $:.grep(%r{/ruby/1\.(8|9\.\d)$})[0]}/irb(/|\.rb$)|/active_support/dependencies.rb$}
+
+  if RUBY_VERSION < '2'
+    IgnoreFiles = %r{#{Regexp.escape $:.grep(%r{/ruby/1\.(8|9\.\d)$})[0]}/irb(/|\.rb$)|/active_support/dependencies.rb$}
+  else
+    IgnoreFiles = %r{/irb(/|\.rb$)|/active_support/dependencies.rb$}
+  end
   
   def format_trace(a)
     return [] if !a.b

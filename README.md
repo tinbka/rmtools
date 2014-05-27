@@ -27,6 +27,15 @@ It's still randomly documented since it's just my working tool.
 
 ### CHANGES
 
+##### Version 2.3.3
+
+* Ruby 2+ behaviour:
+  * Disabled C-extension
+  * Used String#encode instead of Iconv#iconv
+  
+* String
+  * Updated #digit_date to parse full english month names
+
 ##### Version 2.2.5
 
 * String

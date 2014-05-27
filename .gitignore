@@ -20,3 +20,4 @@ Makefile
 *.out
 *.o
 *.so
+.directory
