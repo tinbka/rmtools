@@ -73,5 +73,9 @@ end
   def truth_map
     map_values {|v| !!v}
   end
+  
+  def key_value
+    to_a.first
+  end
 
 end

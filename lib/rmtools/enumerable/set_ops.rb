@@ -14,7 +14,8 @@ module RMTools
         alias :coallition :+
         alias :subtraction :-
         alias :intersection :&
-        protected :union, :coallition, :subtraction, :intersection
+        # :& won't work this way if :intersection will be protected
+        protected :union, :coallition, :subtraction
         
         def |(ary) 
           return ary.uniq if empty?
@@ -55,12 +56,17 @@ module RMTools
           [self - common, ary - common]
         end
         
-        alias diff ^
+        alias :diff :^
         
         def intersects?(ary)
           (self & ary).any?
         end
         alias :x? :intersects?
+        
+        def =~(ary)
+          (self - ary).empty?
+        end
+        alias :is_subset_of? :=~
       }
       super
     end

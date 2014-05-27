@@ -222,9 +222,11 @@ class Array
     foldl(:+, &b) || identity 
   end
   
-  # fastering activesupport's method
-  def group_by(&b) 
-    arrange(:group, &b) 
+  if RUBY_VERSION < '2'
+    # fastering activesupport's method
+    def group_by(&b) 
+      arrange(:group, &b) 
+    end
   end
   
 end

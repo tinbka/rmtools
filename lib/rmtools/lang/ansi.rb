@@ -19,7 +19,7 @@ module RMTools
       ANSI_ENCODING = ANSI_LETTERS_UC[0].encoding
     end
   
-    ENCODINGS_PATTERNS["WINDOWS-1251"] = /[#{ANSI_LETTERS_UC.concat(ANSI_YOYE).join}]/
+    ENCODINGS_PATTERNS["WINDOWS-1251"] = /[#{ANSI_LETTERS_UC.join}]/
   end
 
   if RUBY_VERSION < '2'
@@ -40,60 +40,60 @@ class String
   
   if RUBY_VERSION < '2'
     
-    def utf(from_encoding='WINDOWS-1251//IGNORE')
-      (ICONVS['UTF-8<'+from_encoding] ||= Iconv.new('UTF-8//IGNORE', from_encoding)).iconv(self)
+    def utf(from_encoding=encoding.name.upcase)
+      from_encoding += "//IGNORE"
+      (ICONVS["UTF-8<#{from_encoding}"] ||= Iconv.new('UTF-8//IGNORE', from_encoding)).iconv(self)
     end
     
-    def ansi(from_encoding='UTF-8//IGNORE')
-      (ICONVS['WINDOWS-1251<'+from_encoding] ||= Iconv.new('WINDOWS-1251//IGNORE', from_encoding)).iconv(self)
+    def ansi(from_encoding=encoding.name.upcase)
+      from_encoding += "//IGNORE"
+      (ICONVS["WINDOWS-1251<#{from_encoding}"] ||= Iconv.new('WINDOWS-1251//IGNORE', from_encoding)).iconv(self)
     end
     
-    def utf!(from_encoding='WINDOWS-1251//IGNORE')
+    def utf!(from_encoding=encoding.name.upcase)
       replace utf from_encoding
     end
     
-    def ansi!(from_encoding='UTF-8//IGNORE')
+    def ansi!(from_encoding=encoding.name.upcase)
       replace ansi from_encoding
     end
     
   else
     
-    def utf(from_encoding='WINDOWS-1251')
+    def utf(from_encoding="UTF-16")
       encode(from_encoding, :invalid => :replace, :undef => :replace, :replace => "").encode("UTF-8", :invalid => :replace, :undef => :replace, :replace => "")
     end
     
-    def ansi(from_encoding='UTF-8')
+    def ansi(from_encoding="UTF-16")
       encode(from_encoding, :invalid => :replace, :undef => :replace, :replace => "").encode("WINDOWS-1251", :invalid => :replace, :undef => :replace, :replace => "")
     end
     
-    def utf!(from_encoding='WINDOWS-1251')
+    def utf!(from_encoding="UTF-16")
       replace utf from_encoding
     end
     
-    def ansi!(from_encoding='UTF-8')
+    def ansi!(from_encoding="UTF-16")
       replace ansi from_encoding
     end
     
   end
   
   
-  def valid_encoding?
+  def utf?
     begin
-      self =~ /./
-    rescue ArgumentError
+      encoding == Encoding::UTF_8 and self =~ /./u
+    rescue Encoding::CompatibilityError
       false
-    else
-      true
     end
   end
   
-  def fix_encoding!
+  def find_compatible_encoding
     # UTF-8 by default
-    return nil if valid_encoding?
+    return nil if utf?
     for enc, pattern in ENCODINGS_PATTERNS
       force_encoding(enc)
-      if valid_encoding? and self =~ pattern
-        return encoding.name.upcase
+      if self =~ pattern
+        return enc
       end
     end
     false

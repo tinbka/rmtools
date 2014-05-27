@@ -117,7 +117,7 @@ module RMTools
       cmd = "scp #{fullpath.inspect} #{[@host, fpath].join(':').inspect} 2>&1"
       print "`#{cmd}`: " if @debug
       if res = RMTools::tick_while {`#{cmd}`}.b
-        puts "[ #{Painter.rb('Error')} ]: #{res}"
+        puts "[ #{Painter.r_b('Error')} ]: #{res}"
       else
         print "[ #{Painter.g('OK')} ]"
       end
