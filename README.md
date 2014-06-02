@@ -27,7 +27,11 @@ It's still randomly documented since it's just my working tool.
 
 ### CHANGES
 
-##### Version 2.3.4
+##### Version 2.3.7
+
+* RMTools::URI clip constructor
+
+##### Version 2.3.5
 
 * Ruby 2+ behaviour:
   * Disabled C-extension
@@ -35,17 +39,16 @@ It's still randomly documented since it's just my working tool.
   
 * String
   * Updated #digit_date to parse full english month names
+  * #to_html and #to_xml make, respectively, html- and xml- formed documents by LibXML::XML
+  * #to_doc now is deprecated and is alias of #to_html
 
-##### Version 2.2.6
+##### Version 2.2.5
 
 * String
-  * Added #utf? and #find_compatible_encoding. Currently, latter one differentiates only utf-8 and ansi-1251.
+  * Added #fix_encoding! It differentiates only utf-8 and ansi-1251, though
 
 * Range
   * #include? never raises an exception
-
-* Array/Set
-  * Added #is_subset_of?
 
 ##### Version 2.2.4
 

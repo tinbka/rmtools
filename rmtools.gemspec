@@ -19,11 +19,8 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
   
   spec.add_runtime_dependency "activesupport"
-  if RUBY_VERSION < '2'
-  #unless ext_files_not_modified 'rmtools', RMTools::VERSION
-    spec.extensions << 'ext/extconf.rb'
-  #end
-  end
+  
+  spec.extensions << 'ext/extconf.rb'
 
   spec.add_development_dependency "bundler", "~> 1.3"
   spec.add_development_dependency "rake"
