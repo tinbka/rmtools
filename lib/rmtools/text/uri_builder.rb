@@ -2,7 +2,7 @@
 RMTools::require 'text/string_parse'
 
 module RMTools
-  class URI
+  class URIBuilder
     __init__
     attr_reader :protocol, :host, :port, :path, :query, :anchor
     
@@ -68,4 +68,14 @@ module RMTools
     end
   
   end
+end
+
+class String
+
+  unless defined? to_uri
+    def to_uri
+      RMTools::URIBuilder self
+    end
+  end
+
 end

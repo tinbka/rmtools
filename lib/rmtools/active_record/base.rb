@@ -1,7 +1,7 @@
 # encoding: utf-8
 module ActiveRecord
 
-  def self.establish_connection_with config
+  def self.establish_connection_with config='config/database.yml'
     c = case config
             when String
               c = if config.inline
@@ -61,7 +61,11 @@ module ActiveRecord
         end
       end
       
-      def select_rand(limit, options={})
+      def select_rand(limit=nil, options={})
+        unless limit
+          return select_rand(1)[0]
+        end
+        
         cnt = options.delete :cnt
         _where = options.delete :where
         cnt_where = options.delete(:cnt_where) || _where
