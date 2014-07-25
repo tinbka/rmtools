@@ -27,10 +27,6 @@ It's still randomly documented since it's just my working tool.
 
 ### CHANGES
 
-##### Version 2.3.7
-
-* RMTools::URI clip constructor
-
 ##### Version 2.3.5
 
 * Ruby 2+ behaviour:

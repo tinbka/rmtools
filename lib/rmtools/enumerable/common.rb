@@ -41,10 +41,8 @@ module Enumerable
     res.uniq
   end
   
-  unless method_defined? :map_hash
   def map_hash(&block)
     Hash[map(&block)]
-  end
   end
   
   def present
@@ -53,10 +51,6 @@ module Enumerable
   
   def +(array)
     to_a + array.to_a
-  end
-    
-  def =~(item_or_pattern)
-    include? item_or_pattern
   end
 
   def threadify(threads=4, &block)

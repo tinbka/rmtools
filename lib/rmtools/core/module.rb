@@ -1,32 +1,25 @@
+# encoding: utf-8
+require 'active_support/core_ext/module/remove_method'
+
 class Module
   
-  def submodules
-    constants.map! {|name|
-      begin
-        const_get name
-      rescue Exception
-        puts "#{name} can not be loaded due to #{$!.class}: #{$!.message}"
+  # rewrite of active suport method to not initialize significant part of NameErrors
+  def remove_possible_method(method)
+    if method_defined? method
+      begin remove_method method
+      rescue NameError
       end
-    }.uniq.compact.select {|_|
-      _.is_a? Module and _ != self and _.name =~ /^#{self.name}::/ and
-      block_given? ? yield(_) : true
-    }
+    end
   end
   
-  def submodules_tree
-    submodules.map! {|_|
-      if desc = _.submodules_tree.b
-        [_, _.submodules_tree]
-      else
-        _
-      end
-    }
+  def children
+    constants.map! {|c| module_eval c.to_s}.find_all {|c| c.kinda Module rescue()}
   end
                 
-  def each_submodule(&b)
-    submodules.each {|_| &b[_]; true}
+  def each_child
+    (cs = constants.map! {|c| module_eval c.to_s}).each {|c| yield c if c.kinda Module}
+    cs
   end
-  
   
   def self_name
     @self_name ||= name[/[^:]+$/]
