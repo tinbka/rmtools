@@ -2,7 +2,7 @@
 RMTools::require 'text/string_parse'
 
 module RMTools
-  class URIBuilder
+  class UriBuilder
     __init__
     attr_reader :protocol, :host, :port, :path, :query, :anchor
     

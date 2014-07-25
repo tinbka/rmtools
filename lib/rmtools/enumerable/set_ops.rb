@@ -48,27 +48,29 @@ module RMTools
           intersection ary
         end
         
-        def ^(ary)
+        def diff(ary)
           return [dup, ary.dup] if empty? or (ary.respond_to? :empty? and ary.empty?)
           return [[], []] if self == ary
           
           common = intersection ary
           [self - common, ary - common]
         end
-        
-        alias :diff :^
+        alias :^ :diff
         
         def intersects?(ary)
           (self & ary).any?
         end
         alias :x? :intersects?
         
-        def =~(ary)
+        def contains?(ary)
+          (ary - self).empty?
+        end
+        alias :=~ :contains?
+        
+        def is_subset_of?(ary)
           (self - ary).empty?
         end
-        alias :is_subset_of? :=~
       }
-      super
     end
   
   end

@@ -3,20 +3,6 @@ require 'rmtools/core/object'
 
 class Class
   
-  def method_proxy *vars
-    buffered_missing = instance_methods.grep(/method_missing/).sort.last || 'method_missing'
-    # next arg overrides previous
-    vars.each {|v|
-      class_eval "
-      alias #{buffered_missing.bump! '_'} method_missing
-      def method_missing *args, &block
-        #{v}.send *args, &block
-      rescue NoMethodError
-        #{buffered_missing} *args, &block
-      end"
-    }
-  end
-  
   def personal_methods filter=//
     (self.singleton_methods - self.superclass.singleton_methods).sort!.grep(filter)
   end
@@ -35,29 +21,55 @@ class Class
   end
   
   private
-  # define python-style initializer
-  # p = Post()
-  # p = Post user_id: 10
+  # module Container
+  #   class Initialized
+  #     __init__
+  #   end
+  #   Initializers::Initialized() # Container::Initialized.new
+  #   Initialized() # Container::Initialized.new
+  #
+  #   class Inner
+  #     Container::Initialized() # Container::Initialized.new
+  #     Initialized() # Container::Initialized.new
+  #     def init
+  #       Container::Initialized() # Container::Initialized.new
+  #       Initialized() # Container::Initialized.new
+  #     end
+  #   end
+  # end
+  # 
+  # class Outer
+  #   Container::Initialized() # Container::Initialized.new
+  #   Initialized() # NoMethodError
+  #   def init
+  #     Container::Initialized() # Container::Initialized.new
+  #     Initialized() # NoMethodError
+  #   end
+  # end
   def __init__
-    path = name.split('::')
-    classname = path[-1]
-    mod = '::'.in(name) ? eval(path[0..-2]*'::') : RMTools
-    if mod.is Module
-      mod.module_eval "def #{classname} *args, &block; #{name}.new *args, &block end
-                   module_function :#{classname}"
-      if mod != RMTools
-        mod.each_child {|c| c.class_eval "include #{mod}; extend #{mod}" if !c.in c.children}
-      end
-    else
-      mod.class_eval "def #{classname} *args, &block; #{name}.new *args, &block end"
+    mod = prnt = parent
+    if prnt == Object
+      mod = RMTools
     end
-  end 
-  
-  def alias_constant(name)
-    class_eval %{
-    def #{name}(key=nil)
-      key ? self.class::#{name}[key] : self.class::#{name}
-    end}
+    
+    mod.module_eval "
+    module Initializers
+      def #{classname} *args, **kw &block
+        if kw.empty?
+          #{name}.new *args &block
+        else
+          #{name}.new *args, **kw &block
+        end
+      end
+      module_function :#{classname}
+    end"
+    
+    if prnt != Object
+      [prnt, prnt.submodules].flatten.each {|m|
+        m.__send__ :include, mod::Initializers
+        m.__send__ :extend, mod::Initializers
+      }
+    end
   end
   
 end

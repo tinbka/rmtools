@@ -106,7 +106,9 @@ module ActiveRecord
          write_attribute('#{key}', Fixnum === val ? val : self.class.enums[:#{key}].index val.to_s
         end
        }
-      end
+     end
+     
+     # AUTO SCOPE #
      
       # usable to define shortcut-scopes on class with number of boolean flags: #admin, #open, #removed, etc
       def boolean_scopes!
@@ -130,6 +132,34 @@ module ActiveRecord
         }
       rescue
         nil
+      end
+      
+      # MASS UPDATE #
+      
+      def affected_rows_count(*column_names)
+        "Updated #{connection.instance_variable_get(:@connection).affected_rows} #{column_names.map {|name| name.to_s.pluralize}*', '}"
+      end
+       
+      def update_reference_columns!(referred_class: self, columns_reference: nil, reference_name: nil, column_name: nil, foreign_column_name: nil, key: nil, op: '= ?')
+        # да, pluck не умеет выбирать туплы, по крайней мере в 3 версии
+        columns_reference ||= referred_class.select([:id, foreign_column_name]).map {|obj| [obj.id,obj[foreign_column_name]]}
+        reference_name ||= referred_class.name.underscore
+        key ||= "#{reference_name}_id"
+        column_name ||= "#{reference_name}_#{foreign_column_name}"
+        execute_sanitized [
+          "UPDATE #{quoted_table_name} 
+          SET #{column_name} = CASE
+          #{" WHEN #{key} #{op} THEN ?" * columns_reference.size} 
+          ELSE #{column_name} END", 
+          *columns_reference.flatten]
+        puts affected_rows_count column_name
+      end
+        
+      def update_reference_ids!(referred_class: self, ids_reference: nil, reference_name: nil, key: nil, op: '= ?')
+        ids_reference ||= referred_class.select([:id, :uid]).map {|obj| [obj.uid,obj.id]}
+        reference_name ||= referred_class.name.underscore
+        key ||= "#{reference_name}_uid"
+        update_reference_columns! columns_reference: ids_reference, reference_name: reference_name, foreign_column_name: :id, key: key, op: op
       end
    
     end
@@ -167,17 +197,41 @@ module ActiveRecord
           self.class.destroy_all(field => self[field]) : 
           self.class.destroy_all(attributes)
     end
-    
+      
     def resource_path
       "#{self.class.name.tableize}/#{id}"
     end
     
-    def with_same(attr)
-      self.class.where(attr => self[attr])
+    
+    # Find neighbors (and self)
+    def with_same(*attrs)
+      self.class.where(attrs.map_hash {|attr| [attr, self[attr]]})
     end
-  
-    def update_attributes?(hash)
-      hash.each {|k, v| self[k] = v}
+    
+    # No neighbors?
+    def uniq_by?(*attrs)
+      same = with_same(*attrs)
+      same = same.where('id != ?', id) if id
+      same.empty?
+    end
+    
+    # Use case:
+    #   if update_attributes? attributes_hash
+    #     @dependent_calculated_value = nil
+    #   end
+    # somewhere further:
+    #   def dependent_calculated_value
+    #     ifnull {calculate_dependent_value}
+    #   end
+    #
+    # @ hash : attributes to update
+    # @ force : whether to skip attributes protection check
+    def update_attributes?(hash, force=false)
+      if force
+        hash.each {|k, v| self[k] = v}
+      else
+        self.attributes = hash
+      end
       changed? && save
     end
     

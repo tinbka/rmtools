@@ -71,6 +71,26 @@ class Object
     instance_variable_set ivar, yield 
   end
   
+  # def result_of_hard_calculation
+  #   ifnull {... hard_calculation ...}
+  # end
+  # ==
+  # def result_of_hard_calculation
+  #   if !@result_of_hard_calculation.nil?
+  #     return @result_of_hard_calculation
+  #   else
+  #     ... hard_calculation
+  #     res = ...
+  #     @result_of_hard_calculation = res
+  #   end
+  # end
+  def ifnull(ivar=caller(1)[0].parse(:caller).func)
+    ivar = :"@#{ivar}"
+    val = instance_variable_get(ivar)
+    return val unless val.nil?
+    instance_variable_set ivar, yield 
+  end
+  
   
   
   def deep_clone

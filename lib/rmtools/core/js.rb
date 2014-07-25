@@ -39,8 +39,9 @@ class Hash
 end
 
 class String
-  if !method_defined? :plus
+  unless private_method_defined? :plus
     alias :plus :+ 
+    private :plus
   
     #   immutable:
     # '123' + 95 # => '12395'
