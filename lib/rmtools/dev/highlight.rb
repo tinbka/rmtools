@@ -30,3 +30,17 @@ class Proc
   end
   
 end
+
+if RUBY_VERSION > '1.9'
+  class Method
+    def inspect
+      "#{to_s}: \n#{RMTools.highlighted_line(*source_location)}"
+    end
+  end
+  
+  class UnboundMethod
+    def inspect
+      "#{to_s}: \n#{RMTools.highlighted_line(*source_location)}"
+    end
+  end
+end

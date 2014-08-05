@@ -76,6 +76,10 @@ class String
       replace ansi from_encoding
     end
     
+    def is_utf!(utf='UTF-8')
+      force_encoding utf
+    end
+    
   end
   
   

@@ -37,7 +37,6 @@ class Array
     defaults.slice! 0, size
     concat defaults << opts
   end
-  alias :fetch_options :fetch_opts
   alias :get_opts :fetch_opts
 
   def valid_types(pattern_ary)

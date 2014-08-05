@@ -20,7 +20,7 @@ class Binding
   end
   
   def inspect_class_variables
-    vars = self.eval('self.class.class_variables') # ['@@a', '@@b']
+    vars = self.eval('(self.is_a?(Module) ? self : self.class).class_variables') # ['@@a', '@@b']
     if vars and vars.any?
       values = self.eval "{#{vars.map {|v| "'#{v}'=>defined?(#{v})&&#{v}"} * ','}}" # ["@@a's value", "@@b's value"]
       #Hash[vars.zip(values)]

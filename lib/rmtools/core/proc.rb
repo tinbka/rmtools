@@ -3,7 +3,7 @@ class Proc
   NULL = lambda {|*x|} unless defined? Proc::NULL
   TRUE = lambda {|*x| true} unless defined? Proc::TRUE
   FALSE = lambda {|*x| false} unless defined? Proc::FALSE
-  SELF = lambda {|x| x} unless defined? Proc::FALSE
+  SELF = lambda {|x| x} unless defined? Proc::SELF
   attr_accessor :string
   
   def when
@@ -16,7 +16,7 @@ class Proc
   class << self
     
     def eval string, binding=nil
-      (proc = (binding || Kernel).eval "lambda {#{string}}").string = string
+      (proc = (binding || Kernel).eval "proc {#{string}}").string = string
       proc
     end
     

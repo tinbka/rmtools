@@ -1,5 +1,9 @@
 # encoding: utf-8
 class String
+      
+  def -(pattern)
+    gsub pattern, ''
+  end
   
   def inline
     index("\n").nil?

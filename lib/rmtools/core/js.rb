@@ -2,7 +2,6 @@
 
 # Javascript hash getter/setter and string concat logic
 class Hash
-  alias :throw_no :method_missing
   
   # hash = {}
   # hash.abc = 123
@@ -19,7 +18,7 @@ class Hash
     if str =~ /=$/
       self[str[0..-2]] = args[0]
     elsif !args.empty? or str =~ /[!?]$/
-      throw_no method 
+      super
     else
       a = self[method]
       (a == default) ? self[str] : a
@@ -34,6 +33,10 @@ class Hash
   def id
     a = self[:id]
     (a == default) ? self['id'] : a
+  end
+  def index
+    a = self[:index]
+    (a == default) ? self['index'] : a
   end
 
 end

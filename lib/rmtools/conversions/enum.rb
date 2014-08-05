@@ -15,7 +15,7 @@ module Enumerable
   # => "a=10&a=20&b=10&b=20"
   # Stringifies hashes with hash-value values:
   # {'a'=>{0=>10, 'b'=>{'c'=>20, 'd'=>30}}}.urlencode
-  # => "a[0]=10&a[b]=20"
+  # => "a[0]=10&a[b][c]=20&a[b][d]=30"
   
   # TODO: deal with it
   def urlencode

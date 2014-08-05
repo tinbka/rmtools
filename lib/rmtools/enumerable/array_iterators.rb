@@ -15,16 +15,19 @@ class Array
   if respond_to? :mattr_reader
     mattr_reader :iterators_names, :iterators_pattern
   else
-    cattr_reader :iterators_names, :iterators_pattern, :instance_reader => false
+    cattr_reader :iterators_names, :iterators_pattern, :instance_accessor => false
   end
   @@iterators_names = []
   
 private
 
+  # It's here just because it's simplier and faster (40 times)
+  # than ActiveSupport's singularization.
+  # If you want to use latter one, run
+  # Array.use_active_support_singularize!
   def simple_inplace_singularize!(noun)
     noun.sub!(/(ss|[sc]h|[xo])es([=!?]?)$/, '\1\2') or 
     noun.sub!(/ies([=!?]?)$/, 'y\1') or 
-    noun.sub!(/ves([=!?]?)$/, 'f\1') or 
     noun.sub!(/s([=!?]?)$/, '\1')
   end
   
@@ -34,6 +37,14 @@ private
       name_or_list = [name_or_list] if !name_or_list.is Array
       @@iterators_names |= name_or_list
       @@iterators_pattern = %r{^(#{@@iterators_names*'|'})_([\w\d\_]+[!?]?)}
+    end
+    
+    def use_active_support_singularize!
+      class_eval do
+        def simple_inplace_singularize!(noun)
+          ActiveSupport::Inflector.singularize noun
+        end
+      end
     end
   
     def fallback_to_clean_iterators!
