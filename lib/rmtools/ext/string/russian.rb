@@ -6,8 +6,8 @@ module RMTools
   module String
     module Russian
       
-      def self.extended(mod)
-        mod.class_eval {
+      def self.extended(string)
+        string.class_eval {
           include RMTools::Russian
           include Detect
           include Transform

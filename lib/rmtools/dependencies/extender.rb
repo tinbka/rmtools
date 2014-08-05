@@ -2,30 +2,36 @@ module RMTools
   module Extender
   private
   
-    def acronym!
-      ActiveSupport::Inflector.inflections {|i| i.acronym self_name}
-    end
-    
-    def inherit_enum_attribute(name, default)
-      unless respond_to? name
-        class_attribute name
-        if superclass.respond_to? name
-          __send__ :"#{name}=", superclass.__send__(name).dup
-        else
-          __send__ :"#{name}=", default.dup
-        end
-      end
-      unless method_defined? name
-        class_eval "def #{name}; self.class.#{name} end"
+    # Один файл в папке расширения — это норма
+    def __extend__(method, target, addition)
+      ext = target # ActiveRecord
+      ext << "::#{by}" if by # ActiveRecord::Connection
+      path = "#{name}/ext/#{ext}".underscore # rmtools/ext/active_record/connection
+      
+      if require path
+        target = Object.const_get target # ::ActiveRecord
+        extender = const_get ext # ActiveRecord::Connection
+        target.__send__ method, extender
       end
     end
-  
-    def inherit_dict_attribute(name, default={})
-      inherit_enum_attribute name, default
+
+    def extend!(target, by: nil)
+      __extend__ target.to_s, by && by.to_s, :extend
     end
-  
-    def inherit_array_attribute(name, default=[])
-      inherit_enum_attribute name, default
+
+    def include_in!(target, by=nil)
+      __extend__ target.to_s, by && by.to_s, :include
+    end
+
+    def sugar!(targets, by: nil)
+      path = "#{name}/sugar/#{by}".underscore # rmtools/sugar/dictable
+      
+      require path
+      extender = Sugar.const_get by # Sugar::Dictable
+      Array(targets).each {|target|
+        target = Object.const_get target # ::Hash
+        target.__send__ :extend, extender
+      }
     end
     
   end

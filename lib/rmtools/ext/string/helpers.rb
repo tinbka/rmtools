@@ -6,6 +6,10 @@ module RMTools
         split(*args)
       end
       
+      def -(pattern)
+        gsub pattern, ''
+      end
+      
       def inline
         index("\n").nil?
       end

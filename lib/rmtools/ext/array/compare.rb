@@ -11,7 +11,7 @@ module RMTools
       def is(something)
         if something.instance_of?(Array)
           something.size == size and
-            each_with_index.every? {|_, i| _.is something[i]}
+            each_with_index.none? {|_, i| !_.is something[i]}
         else
           super
         end
@@ -27,13 +27,13 @@ module RMTools
       def kinda(something)
         if something.instance_of?(Array)
           something.size == size and
-            each_with_index.every? {|_, i| _.kinda something[i]}
+            each_with_index.none? {|_, i| !_.kinda something[i]}
         else
           super
         end
       end
       
-      # === rewrite lies in rmtools/sugar/
+      # Array#=== rewrite lies in rmtools/sugar/
     end
   end
 end

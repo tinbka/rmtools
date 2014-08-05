@@ -48,7 +48,7 @@ instead of
 ```ruby
 ary.ids
 ```
-? You're actually killing performance.
+? You're actually slowing performance.
 ```ruby
 hash[:id]
 ```
@@ -56,7 +56,7 @@ instead of
 ```ruby
 hash.id
 ```
-? [:symbol] may give more notability in an editor, but not when whole your display is dappling with :symbols.
+? [:symbol] may give more notability in an editor, but it gets lost when whole your display is dappling with [:keys].
 ```ruby
 ary.map {|h| h["ref_id"]}
 ary1.each_with_index {|h, i| h[1] = ary2[i]}
@@ -115,8 +115,7 @@ Admin.User email: 'admin@mail' # => #<Admin::User id: nil, email: "admin@mail"..
   * [hirb](https://github.com/cldwalker/hirb): presenter of 2D-objects as ascii tables
 * Some functionality is detached from rmtools, though remains dependent on it
   * RMLogger moved to rmlogger gem
-  * LibXML extension bundled with RHACK::Page extension moved to xmldigger gem
-  
+  * LibXML extension merged with RHACK::Page extension moved to antixml gem
 
 #### Added
 * `RMTools::UriBuilder`
@@ -124,8 +123,15 @@ URI clip constructor
 * `ActiveRecord::Base::update_reference_columns!`
 Bulk-update table based on existing data tables.
 
+#### Updated
+* C-ext comes again in action
+and Hash#map_hash and Array#map_hash now implemented on C-level
+* Enumerable#urlencode and String.to_params
+now will use internally more advanced implementations of ActiveSupport and Rack::Utils
+
 #### Fixed
-* `RMTools::format_trace` double rendering in rails depths
+* RMTools::format_trace
+double rendering within rails depths
 
 ### Previous changes
 

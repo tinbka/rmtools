@@ -67,8 +67,13 @@ module RMTools
         end
       end
 
-      # with default delimiters - the opposite of #urlencode
+      # With default delimiters — the opposite of Hash#urlencode/Hash#to_query
+      # It's highly recommended to have Rack::Utils defined for nested params support
       def to_params(unscp=true, params_delim='&', k_v_delim='=')
+        if defined? Rack::Utils
+          return Rack::Utils.parse_nested_query(self, params_delim)
+        end
+        
         params = split(params_delim)
         h = {}
         params.each {|par|

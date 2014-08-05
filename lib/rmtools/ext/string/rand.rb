@@ -13,6 +13,10 @@ module RMTools
     
     module Rand
       
+      def self.included(string)
+        string.__send__ :extend, RandClassMethods
+      end
+      
       def rand(chsize=1)
         self[Kernel.rand(size*chsize), chsize]
       end

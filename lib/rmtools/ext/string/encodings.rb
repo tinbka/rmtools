@@ -17,6 +17,10 @@ module RMTools
       def ansi!(from_encoding="UTF-16")
         replace ansi from_encoding
       end
+    
+      def is_utf!(utf='UTF-8')
+        force_encoding utf
+      end
   
       def utf?
         begin
