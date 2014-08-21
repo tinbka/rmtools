@@ -1,7 +1,7 @@
 ### RMTools
 [github](https://github.com/tinbka/rmtools)
 
-*This description is kinda fuzzy and outdated. More up-to-date statement of concept is in version 3 readme. I'll release it at September maybe*
+*This description is kinda fuzzy and outdated. More up-to-date statement of concept is in [version 3](https://github.com/tinbka/rmtools/tree/v3) readme. I'll try to release it at September.*
 
 Collection of helpers for any need: strings, enumerables, modules... hundreds of bicycles and shortcuts you ever wanted to implement are here, optimized for performance.
 Small dev library (constantly in progress): fast and smart logger, binding explorer, backtrace formatter, each is console-colored.
