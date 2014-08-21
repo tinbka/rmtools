@@ -19,7 +19,7 @@ module RMTools
       lines = []
       strlen = 0
       step = qty*100
-      while qty > 0 and (offset = size-strlen-step) >= 0 and (str = IO.read(file, step, offset)).b
+      while qty > 0 and (offset = size-strlen-step) >= 0 and !(str = IO.read(file, step, offset)).empty?
         i = str.index("\n") || str.size
         strlen += step - i
         new_lines = str[i+1..-1]/"\n"

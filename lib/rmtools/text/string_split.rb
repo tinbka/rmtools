@@ -50,7 +50,7 @@ class String
       return [self] if len <= 0
       str = dup
       arr = []
-      while str.b
+      until str.empty?
         arr << str.slice!(0, len)
       end
       arr
@@ -84,17 +84,21 @@ class String
       blocks = []
       term_re = /[^#{terminator}]+\z/ if terminator and terminator != :syntax
       words, buf = split(opts[:strips] ? ' ' : / /), nil
-      while words.b or buf.b
-        if terminator and blocks.b and (
+      while !words.empty? or !buf.empty?
+        if terminator and !blocks.empty?
           buf_add = if terminator == :syntax
-                          split_by_syntax blocks[-1], maxlen, buf.size
-                         else blocks[-1][term_re]
-                         end.b)
-          if buf_add == blocks[-1]
-                 blocks.pop
-          else blocks[-1] = blocks[-1][0...-buf_add.size]
+            split_by_syntax blocks[-1], maxlen, buf.size
+          else
+            blocks[-1][term_re]
           end
-          buf = buf_add + buf
+          if !buf_add.empty?
+            if buf_add == blocks[-1]
+              blocks.pop
+            else
+              blocks[-1] = blocks[-1][0...-buf_add.size]
+            end
+            buf = buf_add + buf
+          end
         end
         if blocks.size == opts[:lines]
           return sanitize_blocks! blocks, maxlen, opts
@@ -104,7 +108,7 @@ class String
           blocks[-1] << buf
           buf = nil
         end
-        while words.b
+        until words.empty?
           buf = words.shift + ' '
           break if blocks[-1].size + buf.size - 1 > maxlen
           blocks[-1] << buf

@@ -32,7 +32,7 @@ module RMTools
       method_defined? :p and undef_method :p  
       
       def demo(str, pattern=nil)
-        %w[black red green yellow blue purple cyan gray].xprod(%w[bold underline graybg boldbg]).each {|color, effect|
+        %w[black red green yellow blue purple cyan gray].product(%w[bold underline graybg boldbg]).each {|color, effect|
           if pattern
             puts ghl(str, pattern, "#{color}_#{effect}")
           else

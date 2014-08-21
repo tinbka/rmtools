@@ -33,3 +33,11 @@ class Numeric
   end
   
 end
+
+module Math
+
+  def logb(b, x)
+    log(x)/log(b)
+  end
+
+end

@@ -1,6 +1,8 @@
 ### RMTools
 [github](https://github.com/tinbka/rmtools)
 
+*This description is kinda fuzzy and outdated. More up-to-date statement of concept is in version 3 readme. I'll release it at September maybe*
+
 Collection of helpers for any need: strings, enumerables, modules... hundreds of bicycles and shortcuts you ever wanted to implement are here, optimized for performance.
 Small dev library (constantly in progress): fast and smart logger, binding explorer, backtrace formatter, each is console-colored.
 Started from basic classes, now it contains low-level helpers for ActiveRecord and makes LibXML more jqueryish.
@@ -27,7 +29,15 @@ It's still randomly documented since it's just my working tool.
 
 ### CHANGES
 
-##### Version 2.3.5
+##### Version 2.4.0
+
+* Ruby 2.1+ behaviour:
+  Since String#b in Ruby 2.1 is now an internal method incompatible with rmtools' String#b, our String#b will not be defined only if ruby version > 2.1.
+  Other methods have been refactored with this in an account.
+* RMTools.format_trace
+  fixed double rendering within rails depths
+
+##### Version 2.3.6
 
 * Ruby 2+ behaviour:
   * Disabled C-extension

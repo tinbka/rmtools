@@ -17,6 +17,7 @@ module ObjectSpace
         nil
       end
     end
+    alias [] find
     
   end
 end

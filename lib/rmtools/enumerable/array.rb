@@ -176,7 +176,7 @@ class Array
   alias :order_by :sort_along_by
   
   # concatenation  
-  # analogue to String#>>
+  # analogy of String#>>
   def >>(ary)
     ary.replace(self + ary)
   end
@@ -206,6 +206,7 @@ class Array
     each_with_index.map(&block)
   end
     
+  # yield every unique combination of two elements
   def each_two
     _end = size-1
     self[0..-2].each_with_index {|u, i|

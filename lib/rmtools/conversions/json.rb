@@ -72,8 +72,8 @@ rescue LoadError
 end
   
 class Object  
-  # handy when data may not be encodable (active_record objects, recursive structures, etc)
-  def to_json_safe(options=nil)
-    timeout(10) {to_json(options)}
+  # handy when data may appear non-encodable (active_record objects, recursive structures, etc)
+  def to_json_safe(options=nil, timeout: 10)
+    timeout(timeout) {to_json(options)}
   end  
 end

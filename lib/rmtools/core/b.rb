@@ -12,8 +12,10 @@ class Numeric
   def b; !zero? && self end
 end
 
-class String
-  def b; !empty? && self end
+if RUBY_VERSION < '2.1'
+  class String
+    def b; !empty? && self end
+  end
 end
 
 class Proc
