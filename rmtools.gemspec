@@ -14,14 +14,10 @@ Gem::Specification.new do |spec|
   spec.homepage      = "https://github.com/tinbka/rmtools"
   spec.license       = "MIT"
 
-  spec.files         = `git ls-files`.split($/)
+  spec.files         = `git ls-files`.split
   # nonetheless, for this gem spec.files() returns [] after installation
   spec.require_paths = ["lib"]
   
-  spec.add_runtime_dependency "activesupport"
-  
+  # we want to overwrite some its methods
   spec.extensions << 'ext/extconf.rb'
-
-  spec.add_development_dependency "bundler", "~> 1.3"
-  spec.add_development_dependency "rake"
 end

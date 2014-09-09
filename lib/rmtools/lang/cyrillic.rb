@@ -84,6 +84,10 @@ class String
     def cuncap
       self[0].cdowncase + self[1..-1]
     end
+    
+    def funcap
+      self[0].fdowncase + self[1..-1]
+    end
       
     alias csize size
     alias cljust ljust

@@ -9,10 +9,10 @@ module RMTools
   # with caller processing and highlighting
   class RMLogger
     __init__
-    attr_accessor :mute_info, :mute_warn, :mute_log, :mute_debug
+    attr_accessor :mute_info, :mute_error, :mute_warn, :mute_log, :mute_debug
     attr_reader :default_format
         
-    Modes = [:debug, :log, :info, :warn]
+    Modes = [:debug, :log, :info, :warn, :error]
     NOPRINT = 8
     NOLOG = 4
     PREV_CALLER = 2
@@ -21,6 +21,7 @@ module RMTools
     def initialize format={}
       @c = Painter
       @highlight = {
+          :error => @c.red_bold("ERROR"),
           :warn => @c.red_bold("WARN"),
           :log => @c.cyan("INFO"),
           :info => @c.cyan_bold("INFO"),
@@ -28,6 +29,16 @@ module RMTools
       }
       @file_formats = Hash.new(@default_format = {})
       set_format :global, format
+      
+      if ENV['LOGLEVEL']
+        self.log_level = ENV['LOGLEVEL']
+      elsif ENV['DEBUG'] || ENV['VERBOSE']
+        self.log_level = 'DEBUG'
+      elsif ENV['WARN'] || ENV['QUIET']
+        self.log_level = 'WARN'
+      elsif ENV['SILENT']
+        self.log_level = 'ERROR'
+      end
     end
           
     def _set_format file, format
@@ -97,6 +108,8 @@ module RMTools
       %{<Logger #{cfg.fmt.sub('%time', "%time(#{cfg.tf*'.'})").sub('%caller', "%caller(#{cfg.cf0})")}#{' -> '+cfg.out if cfg.out} #{modes.b ? modes.inspect : 'muted'}>}
     end
             
+    # TODO: добавить фильтров, 
+    # например, для обработки текста, который будет логирован
     def _print mode, text, opts, caler, bind, cfg
       log_ = opts&NOLOG==0
       print_ = opts&NOPRINT==0
@@ -139,12 +152,22 @@ module RMTools
     end
         
     # controls:
-    # - $panic: print debug messages
-    # - $verbose: print log messages
-    # - $quiet: print only warn messages regardless of other globals
-    # - @mute_warn, @mute_info, @mute_log: do not print
-    #                       this messages regardless of any globals
-    # - @out_all: write to file any messages
+    # - @mute_warn, @mute_info, @mute_log, @mute_debug: 
+    #       do not print this messages regardless of any globals
+    # - @out_all: write to file info and debug messages
+    # - @out:      write to file
+    # - @print:    write to stdout
+        
+    def error *args
+      cfg = get_config!
+      if (cfg.out or cfg.print) && !@mute_error
+        text, bind, opts = args.get_opts [!block_given? && args[0].kinda(Hash) ? args[0] : "\b\b ", nil], :mute => 0
+        opts[:mute] |= NOLOG if !cfg.out
+        opts[:mute] |= NOPRINT if !cfg.print
+        return if block_given? && (text = yield).nil?
+        _print(:error, text, opts[:mute], cfg._caller && (@current_caller || caller)[opts[:caller].to_i], bind, cfg)
+      end  
+    end
         
     def warn *args
       cfg = get_config!
@@ -159,10 +182,10 @@ module RMTools
         
     def log *args
       cfg = get_config!
-      if (cfg.out or cfg.print && !$quiet && $verbose) && !@mute_log
+      if (cfg.out or cfg.print) && !@mute_log
         text, bind, opts = args.get_opts [!block_given? && args[0].kinda(Hash) ? args[0] : "\b\b ", nil], :mute => 0
         opts[:mute] |= NOLOG if !cfg.out
-        opts[:mute] |= NOPRINT if !(cfg.print && !$quiet && $verbose)
+        opts[:mute] |= NOPRINT if !cfg.print
         return if block_given? && (text = yield).nil?
         _print(:log, text, opts[:mute], cfg._caller && (@current_caller || caller)[opts[:caller].to_i], bind, cfg)
       end
@@ -170,10 +193,10 @@ module RMTools
             
     def info *args
       cfg = get_config!
-      if (cfg.print && !$quiet or cfg.out && cfg.out_all) && !@mute_info
+      if (cfg.print or cfg.out && cfg.out_all) && !@mute_info
         text, bind, opts = args.get_opts [!block_given? && args[0].kinda(Hash) ? args[0] : "\b\b ", nil], :mute => 0
         opts[:mute] |= NOLOG if !(cfg.out && cfg.out_all)
-        opts[:mute] |= NOPRINT if !(cfg.print && !$quiet)
+        opts[:mute] |= NOPRINT if !cfg.print
         return if block_given? && (text = yield).nil?
         _print(:info, text, opts[:mute], cfg._caller && (@current_caller || caller)[opts[:caller].to_i], bind, cfg)
       end 
@@ -181,10 +204,10 @@ module RMTools
           
     def debug *args
       cfg = get_config!
-      if (cfg.print && $panic && !$quiet or cfg.out && cfg.out_all) && !@mute_debug
+      if (cfg.print or cfg.out && cfg.out_all) && !@mute_debug
         text, bind, opts = args.get_opts [!block_given? && args[0].kinda(Hash) ? args[0] : "\b\b ", nil], :mute => 0
         opts[:mute] |= NOLOG if !(cfg.out && cfg.out_all)
-        opts[:mute] |= NOPRINT if !(cfg.print && $panic && !$quiet)
+        opts[:mute] |= NOPRINT if !cfg.print
         return if block_given? && (text = yield).nil?
         _print(:debug, text, opts[:mute], cfg._caller && (@current_caller || caller)[opts[:caller].to_i], bind, cfg)
       end 
@@ -192,11 +215,23 @@ module RMTools
           
     alias :<= :debug
     alias :<< :info
-    alias :<   :warn
     alias :puts :info
+    alias :<   :warn
+    alias :fatal :error
     
     def print text
       info text, caller: 1, mute: INLINE 
+    end
+    
+    def log_level=(level)
+      unless level.is_a? Integer
+        level = ::Logger.const_get(level.to_s.upcase)
+      end
+      self.debug = level < 1
+      self.info     = level < 2
+      self.log      = level < 2
+      self.warn   = level < 3
+      self.error   = level < 4
     end
         
     Modes.each {|m| define_method("#{m}=") {|mute| send :"mute_#{m}=", !mute}}

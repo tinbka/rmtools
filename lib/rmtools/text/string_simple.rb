@@ -70,6 +70,11 @@ class String
   end
   alias :next_version :bump_version
     
+  def uncap
+    self[0].downcase + self[1..-1]
+  end
+  alias :decapitalize :uncap
+    
   def to_re(esc=false)
     Regexp.new(esc ? Regexp.escape(self) : self)
   end

@@ -29,6 +29,16 @@ It's still randomly documented since it's just my working tool.
 
 ### CHANGES
 
+##### Version 2.4.1
+
+* Fixed trace_format for exceptions using Thread::Backtrace
+* Added String#decapitalize and (for cyrillic strings) #funcap
+* RMLogger
+ * made indifferent of global variables: $panic, $verbose, $quiet
+ * control log level by
+  * env variables (globally): LOGLEVEL, DEBUG || VERBOSE, WARN || QUIET, SILENT
+  * instance methods: log_level=, debug=, log=, info=, warn=, error=
+
 ##### Version 2.4.0
 
 * Ruby 2.1+ behaviour:

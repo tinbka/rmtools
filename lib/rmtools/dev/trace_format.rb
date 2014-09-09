@@ -104,12 +104,30 @@ class Exception
   #   end
   # it will be possible to fetch lines entered in IRB
   # else format_trace would only read ordinally require'd files
-  def set_backtrace src
-    if format = self.class.trace_format
-      src = RMTools.__send__ format, src
+  if RUBY_VERSION > '2.1'
+    
+    def set_backtrace src
+      if format = self.class.trace_format
+        if src.is_a? Thread::Backtrace
+          return src
+        else
+          src = RMTools.__send__ format, src
+        end
+      end
+      set_bt src
     end
-    set_bt src
+    
+  else
+    
+    def set_backtrace src
+      if format = self.class.trace_format
+        src = RMTools.__send__ format, src
+      end
+      set_bt src
+    end
+    
   end
+  
 end
   
 # This is the most usable setting, I think. Set it in the irbrc, config/initializers or wherever
