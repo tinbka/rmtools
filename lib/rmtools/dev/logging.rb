@@ -10,7 +10,7 @@ module RMTools
   class RMLogger
     __init__
     attr_accessor :mute_info, :mute_error, :mute_warn, :mute_log, :mute_debug
-    attr_reader :default_format
+    attr_reader :default_format, :log_level
         
     Modes = [:debug, :log, :info, :warn, :error]
     NOPRINT = 8
@@ -38,6 +38,8 @@ module RMTools
         self.log_level = 'WARN'
       elsif ENV['SILENT']
         self.log_level = 'ERROR'
+      else
+        self.log_level = 'INFO'
       end
     end
           
@@ -165,7 +167,7 @@ module RMTools
         opts[:mute] |= NOLOG if !cfg.out
         opts[:mute] |= NOPRINT if !cfg.print
         return if block_given? && (text = yield).nil?
-        _print(:error, text, opts[:mute], cfg._caller && (@current_caller || caller)[opts[:caller].to_i], bind, cfg)
+        _print(:error, text, opts[:mute], cfg._caller && (@current_caller || caller)[(opts[:caller] || opts[:caller_offset]).to_i], bind, cfg)
       end  
     end
         
@@ -176,7 +178,7 @@ module RMTools
         opts[:mute] |= NOLOG if !cfg.out
         opts[:mute] |= NOPRINT if !cfg.print
         return if block_given? && (text = yield).nil?
-        _print(:warn, text, opts[:mute], cfg._caller && (@current_caller || caller)[opts[:caller].to_i], bind, cfg)
+        _print(:warn, text, opts[:mute], cfg._caller && (@current_caller || caller)[(opts[:caller] || opts[:caller_offset]).to_i], bind, cfg)
       end  
     end
         
@@ -185,9 +187,9 @@ module RMTools
       if (cfg.out or cfg.print) && !@mute_log
         text, bind, opts = args.get_opts [!block_given? && args[0].kinda(Hash) ? args[0] : "\b\b ", nil], :mute => 0
         opts[:mute] |= NOLOG if !cfg.out
-        opts[:mute] |= NOPRINT if !cfg.print
+        opts[:mute] |= NOPRINT if !(cfg.print && !@mute_debug)
         return if block_given? && (text = yield).nil?
-        _print(:log, text, opts[:mute], cfg._caller && (@current_caller || caller)[opts[:caller].to_i], bind, cfg)
+        _print(:log, text, opts[:mute], cfg._caller && (@current_caller || caller)[(opts[:caller] || opts[:caller_offset]).to_i], bind, cfg)
       end
     end
             
@@ -198,7 +200,7 @@ module RMTools
         opts[:mute] |= NOLOG if !(cfg.out && cfg.out_all)
         opts[:mute] |= NOPRINT if !cfg.print
         return if block_given? && (text = yield).nil?
-        _print(:info, text, opts[:mute], cfg._caller && (@current_caller || caller)[opts[:caller].to_i], bind, cfg)
+        _print(:info, text, opts[:mute], cfg._caller && (@current_caller || caller)[(opts[:caller] || opts[:caller_offset]).to_i], bind, cfg)
       end 
     end
           
@@ -209,7 +211,7 @@ module RMTools
         opts[:mute] |= NOLOG if !(cfg.out && cfg.out_all)
         opts[:mute] |= NOPRINT if !cfg.print
         return if block_given? && (text = yield).nil?
-        _print(:debug, text, opts[:mute], cfg._caller && (@current_caller || caller)[opts[:caller].to_i], bind, cfg)
+        _print(:debug, text, opts[:mute], cfg._caller && (@current_caller || caller)[(opts[:caller] || opts[:caller_offset]).to_i], bind, cfg)
       end 
     end
           
@@ -227,6 +229,7 @@ module RMTools
       unless level.is_a? Integer
         level = ::Logger.const_get(level.to_s.upcase)
       end
+      @log_level = level
       self.debug = level < 1
       self.info     = level < 2
       self.log      = level < 2

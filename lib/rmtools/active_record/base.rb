@@ -1,7 +1,7 @@
 # encoding: utf-8
 module ActiveRecord
 
-  def self.establish_connection_with config
+  def self.establish_connection_with config='config/database.yml'
     c = case config
             when String
               c = if config.inline
@@ -14,6 +14,12 @@ module ActiveRecord
             when IO then YAML.load config
             else config
           end
+    if defined? Rails
+      env = Rails.env.to_s
+      if c.include? env
+        c = c[env]
+      end
+    end
     Base.establish_connection(c) rescue(false)
   end
 

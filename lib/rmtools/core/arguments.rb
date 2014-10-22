@@ -23,7 +23,7 @@ class Array
     end
     return opts if return_hash
     if defaults == :flags
-      defauls = [:flags]
+      defaults = [:flags]
     end
     if defaults.last == :flags
       defaults.pop

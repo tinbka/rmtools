@@ -57,10 +57,14 @@ class String
     end
     
   private
+    # Если последний (в итераторе в #split_to_blocks
+    # результат #split_by_syntax окажется слишком велик,
+    # он всё равно не будет включен в результат #split_to_blocks.
     def split_by_syntax(str, maxlen, buflen=0)
       len, add = maxlen - buflen, nil
-      [/[^.?!…]+\z/, /[^;]+\z/, /[^,:]+\z/, /[^\n]+/, /\S+\z/, /[^。、]+z/].each {|t|
-        if !(add = str[t]) or add.size <= len
+      [/[^.?!…]+\z/, /[^;]+\z/, /[^,:]+\z/, /[^\n]+/, /\S+\z/, /[^。、]+\z/].each {|t|
+        add = str[t]
+        if !add or add.size <= len
           return add
         end
       }
@@ -84,14 +88,14 @@ class String
       blocks = []
       term_re = /[^#{terminator}]+\z/ if terminator and terminator != :syntax
       words, buf = split(opts[:strips] ? ' ' : / /), nil
-      while !words.empty? or !buf.empty?
+      while !words.empty? or (buf and !buf.empty?)
         if terminator and !blocks.empty?
           buf_add = if terminator == :syntax
             split_by_syntax blocks[-1], maxlen, buf.size
           else
             blocks[-1][term_re]
           end
-          if !buf_add.empty?
+          if buf_add and !buf_add.empty?
             if buf_add == blocks[-1]
               blocks.pop
             else
@@ -159,14 +163,14 @@ class String
   if RUBY_VERSION < '1.9'
     def split_to_lines(maxlen, *opts)
       raise Exception, "Can't break text with maxlen = #{maxlen}" if maxlen < 1
-      opts = opts.fetch_opts([:flags], :strips => true).merge(:strict_overhead => false)
+      opts = opts.fetch_opts(:flags, :strips => true)[0].merge(:strict_overhead => false)
       opts[:charsize] ||= a[0].cyr? ? 2 : 1
       split("\n").map {|string| string.strip.split_to_blocks(maxlen*opts[:charsize], opts)}.flatten*"\n"
     end
   else
     def split_to_lines(maxlen, *opts)
       raise Exception, "Can't break text with maxlen = #{maxlen}" if maxlen < 1
-      opts = opts.fetch_opts([:flags], :strips => true).merge(:strict_overhead => false)
+      opts = opts.fetch_opts(:flags, :strips => true)[0].merge(:strict_overhead => false)
       split("\n").map {|string| string.strip.split_to_blocks(maxlen, opts)}.flatten*"\n"
     end
   end
