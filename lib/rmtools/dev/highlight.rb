@@ -26,7 +26,7 @@ end
 class Proc
   
   def inspect
-    "#{to_s}#{@string ? ': '+Painter.green(@string) : source_location && ": \n"+RMTools.highlighted_line(*source_location)}"
+    "#{to_s}#{@string ? ': '+Painter.green(@string) : source_location && ":\n"+RMTools.highlighted_line(*source_location)}"
   end
   
 end
@@ -34,13 +34,13 @@ end
 if RUBY_VERSION > '1.9'
   class Method
     def inspect
-      "#{to_s}: \n#{RMTools.highlighted_line(*source_location)}"
+      "#{to_s}#{source_location && ":\n#{RMTools.highlighted_line(*source_location)}"}"
     end
   end
   
   class UnboundMethod
     def inspect
-      "#{to_s}: \n#{RMTools.highlighted_line(*source_location)}"
+      "#{to_s}#{source_location && ":\n#{RMTools.highlighted_line(*source_location)}"}"
     end
   end
 end
