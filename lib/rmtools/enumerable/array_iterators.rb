@@ -250,7 +250,7 @@ private
       iterator = iterator.to_sym
       
       case iterator
-      when :sum, :sort_along_by
+      when :sum, :sort_along_by, :order_by
         # sum_posts_ids([], :all) =>
         # sum([]) {|e| e.posts_ids(:all)}
         Array.class_eval %{

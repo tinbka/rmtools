@@ -1,26 +1,32 @@
 # encoding: utf-8
 module ActiveRecord
-
-  def self.establish_connection_with config='config/database.yml'
-    c = case config
-            when String
-              c = if config.inline
-                      if c = RMTools.read(config) then c
-                      else return; nil
+  
+  class << self
+    
+    def establish_connection_with config='config/database.yml'
+      c = case config
+              when String
+                c = if config.inline
+                        if c = RMTools.read(config) then c
+                        else return; nil
+                        end
+                      else config
                       end
-                    else config
-                    end
-              YAML.load c
-            when IO then YAML.load config
-            else config
-          end
-    if defined? Rails
-      env = Rails.env.to_s
-      if c.include? env
-        c = c[env]
+                YAML.load c
+              when IO then YAML.load config
+              else config
+            end
+      if defined? Rails
+        env = Rails.env.to_s
+        if c.include? env
+          c = c[env]
+        end
       end
+      Base.establish_connection(c) rescue(false)
     end
-    Base.establish_connection(c) rescue(false)
+      
+    alias establish_connection establish_connection_with
+    
   end
 
   class Base
