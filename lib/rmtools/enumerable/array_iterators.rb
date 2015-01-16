@@ -19,19 +19,23 @@ class Array
   end
   @@iterators_names = []
   
-private
-
-  # It's here just because it's simplier and faster (40 times)
-  # than ActiveSupport's singularization.
-  # If you want to use latter one, run
-  # Array.use_active_support_singularize!
+  private
+  
   def simple_inplace_singularize!(noun)
-    noun.sub!(/(ss|[sc]h|[xo])es([=!?]?)$/, '\1\2') or 
-    noun.sub!(/ies([=!?]?)$/, 'y\1') or 
-    noun.sub!(/s([=!?]?)$/, '\1')
+    Array.simple_inplace_singularize!(noun)
   end
   
   class << self
+    
+    # It's here just because it's simplier and faster (40 times)
+    # than ActiveSupport's singularization.
+    # If you want to use latter one, run
+    # Array.use_active_support_singularize!
+    def simple_inplace_singularize!(noun)
+      noun.sub!(/(ss|[sc]h|[xo])es([=!?]?)$/, '\1\2') or 
+      noun.sub!(/ies([=!?]?)$/, 'y\1') or 
+      noun.sub!(/s([=!?]?)$/, '\1')
+    end
     
     def add_iterator_name(name_or_list)
       name_or_list = [name_or_list] if !name_or_list.is Array
@@ -123,6 +127,16 @@ private
         end
       end # class_eval
     end # def fallback_to_clean_iterators!
+    
+    alias object_method_defined? method_defined?
+    def method_defined?(method, *private)
+      if object_method_defined?(method, *private)
+        true
+      else
+        method_str = method.to_s
+        !!method_str.match(@@iterators_pattern) or !!simple_inplace_singularize!(method_str)
+      end
+    end
   
   end # << self
     

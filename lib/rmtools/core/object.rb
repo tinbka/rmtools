@@ -72,6 +72,55 @@ class Object
   end
   
   
+  # def hard_method(args)
+  #   ... hard_calculation ...
+  # end
+  #
+  # object.cached(:hard_method, *args1)
+  # > ... hard calculation ...
+  # => result with args1
+  # object.cached(:hard_method, *args1)
+  # => instant result with args1
+  # object.cached?(:hard_method, *args2)
+  # => false
+  # object.cached(:hard_method, *args2)
+  # > ... hard calculation ...
+  # => result with args2
+  # object.cached?(:hard_method, *args2)
+  # => true
+  # object.clear_cache(:hard_method, *args1)
+  # => result with args1
+  # object.cached?(:hard_method, *args1)
+  # => false
+  # object.cached(:hard_method, *args1)
+  # > ... hard calculation ...
+  # => result with args1
+  # object.cached(:hard_method, *args2)
+  # => instant result with args2
+  # object.clear_cache(:hard_method)
+  # => {args1 => result with args1, args2 => result with args2}
+  # [object.cached?(:hard_method, *args1), object.cached?(:hard_method, *args2)]
+  # => [false, false]
+  def cached(method, *args)
+    ((@__method_cache__ ||= {})[method.to_sym] ||= {})[args] ||= __send__ method, *args
+  end
+  
+  def clear_cache(method, *args)
+    if @__method_cache__
+      if args.empty?
+        @__method_cache__.delete method.to_sym
+      elsif method_cache = @__method_cache__[method.to_sym]
+        method_cache.delete args
+      end
+    end
+  end
+  
+  def cached?(method, *args)
+    ((@__method_cache__ ||= {})[method.to_sym] ||= {}).include? args
+  end
+
+  
+  
   
   def deep_clone
     _deep_clone({})

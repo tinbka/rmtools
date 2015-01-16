@@ -120,7 +120,7 @@ module ActiveRecord
       def boolean_scopes!
         columns.select_by_type(:boolean).names.to_syms.each {|col|
           unless respond_to? col
-            scope col, where("#{quoted_table_name}.#{col} = 1")
+            scope col, lambda {where "#{quoted_table_name}.#{col} = 1"}
           end
         }
         rescue
@@ -133,7 +133,7 @@ module ActiveRecord
         boolean_scopes!
         columns.select_null.names.to_syms.each {|col|
           unless respond_to? col
-            scope col, where("#{quoted_table_name}.#{col} is not null")
+            scope col, lambda {where "#{quoted_table_name}.#{col} is not null"}
           end
         }
       rescue
@@ -191,16 +191,18 @@ module ActiveRecord
     
   end
   
-  class Relation
-    
-    def any?
-      limit(1).count != 0
+  if ActiveRecord::VERSION::MAJOR < 4
+    class Relation
+      
+      def any?
+        limit(1).count != 0
+      end
+      
+      def empty?
+        limit(1).count == 0
+      end
+      
     end
-    
-    def empty?
-      limit(1).count == 0
-    end
-    
   end
     
 end

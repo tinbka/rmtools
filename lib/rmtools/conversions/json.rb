@@ -1,5 +1,5 @@
 # Overwrites slow ActiveSupport ActiveSupport::JSON.encode by faster Yajl or JSON libraries
-if Rails.version < '4'
+if ActiveSupport.version.to_s < '4'
   require 'active_support/core_ext/object/to_json'
 else
   require 'active_support/core_ext/object/json'
