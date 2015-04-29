@@ -21,7 +21,7 @@ module LibXML::XML
   
   FindByProc = lambda {|node, ns, ss|
     str_to_eval = ss.matched[1..-2]
-    block = eval "lambda {|_| #{'_' if !str_to_eval['_']}#{str_to_eval}}"
+    block = eval "lambda {|_| #{str_to_eval['_'] ? '' : str_to_eval[0] == '[' ? '_' : '_.'}#{str_to_eval}}"
     node = node.is(Array) ?
       node.sum([]) {|n| n.__find(nil, ns, ss).select(&block).to_a} : 
                       node.__find(nil, ns, ss).select(&block)

@@ -71,7 +71,7 @@ class String
       add
     end
     
-    def sanitize_blocks!(blocks, maxlen, opts)
+    def sanitize_blocks!(blocks, maxlen, terminator, opts)
       blocks.reject! {|b| b.empty?} if opts[:no_blanks]
       blocks.strips! if opts[:strips]
       blocks.each {|b| raise Exception, "can't split string by #{terminator} to blocks with max length = #{maxlen}" if b.size > maxlen} if opts[:strict_overhead]
@@ -85,6 +85,9 @@ class String
       raise Exception, "Can't split text with maxlen = #{maxlen}" if maxlen < 1
       return [self] if size <= maxlen
       terminator, opts = opts.fetch_opts [nil, :flags], :strict_overhead => true, :no_blanks => true
+      if opts[:strict_overhead]
+        opts[:strips] = true
+      end
       blocks = []
       term_re = /[^#{terminator}]+\z/ if terminator and terminator != :syntax
       words, buf = split(opts[:strips] ? ' ' : / /), nil
@@ -105,7 +108,7 @@ class String
           end
         end
         if blocks.size == opts[:lines]
-          return sanitize_blocks! blocks, maxlen, opts
+          return sanitize_blocks! blocks, maxlen, terminator, opts
         end
         blocks << ''
         if buf
@@ -119,7 +122,7 @@ class String
           buf = nil
         end
       end
-      sanitize_blocks! blocks, maxlen, opts
+      sanitize_blocks! blocks, maxlen, terminator, opts
     end
     
     #   'An elegant way to factor duplication out of options passed to a series of method calls. Each method called in the block, with the block variable as the receiver, will have its options merged with the default options hash provided. '.cut_line 100
@@ -138,6 +141,11 @@ class String
       cuted + '…'
     end
   else
+    # TODO: FIXME: 
+    # 'МОСКВА, 4 фев — РИА Новости. Начальник столичного главка МВД Анатолий Якунин поблагодарил сотрудников уголовного розыска и руководство УВД Южного округа за оперативное раскрытие жестокого нападения на женщину на юге Москвы, которую избили и изрезали ножом.'.cut_line 150
+    ### => "МОСКВА, 4 фев — РИА Новости…"
+    #.split_to_blocks(150)[0]
+    ### => "МОСКВА, 4 фев — РИА Новости. Начальник столичного главка МВД Анатолий Якунин поблагодарил сотрудников уголовного розыска и руководство УВД Южного "
     def cut_line(maxlen, terminator=:syntax)
       return self if size <= maxlen
       blocks = split_to_blocks(maxlen-1, terminator, :strips => true, :strict_overhead => false, :lines => 1)
