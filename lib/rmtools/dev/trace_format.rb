@@ -59,6 +59,10 @@ module RMTools
       i += 1
       m = m2
     end
+    # Magic numbers! If a size of a backtrace array > 16 (line count doesn't affect), IRB forgets to print newline after an exception trace! I don't even want to know, why the hell it's going this way!
+    if bt.size > 16 and bt.last[-1] != "\n"
+      bt.last << "\n"
+    end
     bt
   end
   
