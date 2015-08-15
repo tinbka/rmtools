@@ -4,9 +4,41 @@ RMTools::require 'console/coloring'
 RMTools::require 'text/string_parse'
 
 module RMTools
-
-  # lazy logger
-  # with caller processing and highlighting
+  ## Lazy logger
+  ## with timer, coloring and caller hints
+  # Usage:
+  #> $log <= "Starting process..."
+  # 13:43:01.632 DEBUG [(irb):1 :irb_binding]: Starting process...
+  #> $log << ["Got response:", {code: 200, body: "Hello"}]
+  # 13:43:20.524 INFO [(irb):2 :irb_binding]: ["Got response:", {:code=>200, :body=>"Hello"}]
+  # $log < "Oops, something went wrong!"
+  # 13:43:32.030 WARN [(irb):3 :irb_binding]: Oops, something went wrong!
+  #
+  # which is aliases of #debug, #info and #warn, consequently
+  ##
+  # If you want to wrap logger call into another method:
+  #> class Exception
+  #>   def warn!
+  #>     $log.warn "#{self.class} – #{message}", caller: 2
+  #>   end
+  #> end
+  # but still see in log string a reference to that method calling Exeption#warn!
+  # just pass stack frames quantity as :caller param
+  ##
+  # If you want to log an info that need a calculations
+  # (remember, #inspect is a calculations as well)
+  # to be logged, but don't want a production server
+  # to calculate this,
+  # you may pass that calculations in a block:
+  #> $log.debug {a_large_object}
+  # and it won't run if #debug should not run at this moment
+  ##
+  # Log level might be set for one server or console session using ENV variables:
+  # LOGLEVEL={DEBUG | INFO | WARN | ERROR}
+  # or
+  # DEBUG=1 | WARN=1 | SILENT=1
+  # Default log level is INFO
+  ##
   class RMLogger
     __init__
     attr_accessor :mute_info, :mute_error, :mute_warn, :mute_log, :mute_debug
@@ -250,6 +282,7 @@ module RMTools
           
   end
       
-  # default logger now initialized here
+  # Default global logger now initialized here
+  # I believe it wouldn't hurt you
   $log = RMLogger.new
 end

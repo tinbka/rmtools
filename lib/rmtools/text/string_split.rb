@@ -57,7 +57,7 @@ class String
     end
     
   private
-    # Если последний (в итераторе в #split_to_blocks
+    # Если последний (в итераторе в #split_to_blocks)
     # результат #split_by_syntax окажется слишком велик,
     # он всё равно не будет включен в результат #split_to_blocks.
     def split_by_syntax(str, maxlen, buflen=0)
@@ -141,20 +141,16 @@ class String
       cuted + '…'
     end
   else
-    # TODO: FIXME: 
-    # 'МОСКВА, 4 фев — РИА Новости. Начальник столичного главка МВД Анатолий Якунин поблагодарил сотрудников уголовного розыска и руководство УВД Южного округа за оперативное раскрытие жестокого нападения на женщину на юге Москвы, которую избили и изрезали ножом.'.cut_line 150
-    ### => "МОСКВА, 4 фев — РИА Новости…"
-    #.split_to_blocks(150)[0]
-    ### => "МОСКВА, 4 фев — РИА Новости. Начальник столичного главка МВД Анатолий Якунин поблагодарил сотрудников уголовного розыска и руководство УВД Южного "
-    def cut_line(maxlen, terminator=:syntax)
+    # @ maxlen : сделать строку короче значения,
+    # @ terminator :
+    #   - default = nil : не обрезая слов
+    #   - :syntax : которая была бы наиболее законченной фразой
+    def cut_line(maxlen, terminator=nil)
       return self if size <= maxlen
       blocks = split_to_blocks(maxlen-1, terminator, :strips => true, :strict_overhead => false, :lines => 1)
       cuted = (blocks[0] || self)[0, maxlen]
-      if terminator == :syntax
-        cuted.gsub!(/[.!?,;]$/, '')
-      else cuted.chomp!('.')
-      end
-      cuted + '…'
+      cuted.gsub!(/[.?!…;,:\n。、]$/, '')
+      cuted << '…'
     end
   end
     
