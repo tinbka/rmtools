@@ -10,15 +10,17 @@ begin
   
   [Array, Hash, String].each do |klass|
     klass.class_eval do
-      def to_json(*)
-        Yajl::Encoder.encode self
+      # @ options : {:pretty, :indent => string}
+      def to_json(options={})
+        Yajl::Encoder.encode self, options
       end
     end
   end
   
   class String    
     # the opposite of #to_json
-    def from_json(options={}) # :symbolize_keys
+    # @ options : {:symbolize_keys, :allow_comments, :check_utf8}
+    def from_json(options={})
       Yajl::Parser.parse self, options
     end
   end
