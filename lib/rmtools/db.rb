@@ -11,6 +11,7 @@ begin
   else
     require 'openssl'
   end
+rescue LoadError
 rescue Exception
   p $!
   nil

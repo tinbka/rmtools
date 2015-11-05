@@ -42,7 +42,11 @@ rescue LoadError
     [Array, Hash].each do |klass|
       klass.class_eval do
         def to_json(options=nil)
-          JSON.unparse self, options
+          if options.is_a? Hash and options[:pretty]
+            JSON.pretty_generate self, options
+          else
+            JSON.unparse self, options
+          end
         end
       end
     end
