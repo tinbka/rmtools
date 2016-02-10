@@ -13,8 +13,6 @@ class TrueClass
   def <= obj; !!obj or obj == true end
   def > obj; !obj end
   def >= obj; !obj or obj == true end
-  
-  def call(*) self end
 end
 
 class FalseClass
@@ -31,8 +29,6 @@ class FalseClass
   def <= obj; !obj.nil? end
   def > obj; obj.nil? end
   def >= obj; !obj end
-  
-  def call(*) self end
 end
 
 class NilClass

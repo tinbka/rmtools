@@ -1,3 +1,3 @@
 module RMTools
-  VERSION = '2.4.10'
+  VERSION = '2.5.0'
 end
